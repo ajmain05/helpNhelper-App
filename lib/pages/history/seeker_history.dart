@@ -18,7 +18,9 @@ class _SeekerHistoryState extends State<SeekerHistory> {
   @override
   void initState() {
     super.initState();
-    controller.getSeekerHistory();
+    Future.delayed(Duration.zero, () {
+      controller.getSeekerHistory();
+    });
   }
 
   Color _statusColor(String status) {

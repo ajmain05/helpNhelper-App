@@ -22,6 +22,10 @@ final updateTransactionStatusApi =
     "${baseUrl}transactions/update-receive-status/";
 final uploadDocApi = "${baseUrl}volunteer-investigate-document/";
 final donationApi = "${baseUrl}donation";
+final donationHistoryApi = "${baseUrl}donation-history"; // GET donor donations
+final userProfileApi = "${baseUrl}user-profile"; // GET logged-in user profile
 final getTeamMembersApi = "${baseUrl}team-member";
 final getStatsApi = "${baseUrl}stats";
 final getFaqApi = "${baseUrl}faq";
+final updateProfileApi =
+    "${baseUrl}update-profile"; // POST update name/mobile/photo

@@ -38,6 +38,9 @@ class _CampaignListState extends State<CampaignList> {
             : null,
       ),
       body: Obx(() {
+        // Register observable to avoid "Improper use of a GetX" error
+        // when displayList relies solely on widget.list which is not observable.
+        var _ = controller.campaignList.length;
         List<dynamic> displayList = widget.list ?? controller.campaignList;
 
         if (displayList.isEmpty) {

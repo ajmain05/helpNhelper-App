@@ -18,7 +18,9 @@ class _DonorHistoryState extends State<DonorHistory> {
   @override
   void initState() {
     super.initState();
-    Get.find<HomeController>().getAllCampaign();
+    Future.delayed(Duration.zero, () {
+      Get.find<HomeController>().getAllCampaign();
+    });
   }
 
   @override

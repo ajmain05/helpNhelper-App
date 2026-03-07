@@ -11,6 +11,7 @@ import '../service/auth_service.dart';
 
 class AuthController extends GetxController {
   RxBool isLoading = false.obs;
+  RxBool isUpdatingProfile = false.obs;
   RxBool terms = false.obs;
   RxString type = "volunteer".obs;
   RxString countryId = "".obs;
@@ -102,5 +103,19 @@ class AuthController extends GetxController {
   logOut() async {
     AuthService service = AuthService();
     return await service.logOut();
+  }
+
+  Future<bool> updateProfile({
+    String? name,
+    String? mobile,
+    String? photoPath,
+  }) async {
+    isUpdatingProfile.value = true;
+    final service = AuthService();
+    return await service.updateProfile(
+      name: name,
+      mobile: mobile,
+      photoPath: photoPath,
+    );
   }
 }

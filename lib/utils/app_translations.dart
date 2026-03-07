@@ -9,7 +9,9 @@ class AppTranslations extends Translations {
           'about_us': 'About Us',
           'current_campaigns': 'Current Campaigns',
           'history': 'History',
+          'profile': 'Profile',
           'request_for_fund': 'Request for Fund',
+
           'transaction_methods': 'Transaction Methods',
           'transactions': 'Transactions',
           'faq': 'FAQ',
@@ -144,7 +146,9 @@ class AppTranslations extends Translations {
           'about_us': 'আমাদের সম্পর্কে',
           'current_campaigns': 'বর্তমান ক্যাম্পেইন',
           'history': 'ইতিহাস',
+          'profile': 'প্রোফাইল',
           'request_for_fund': 'ফান্ডের আবেদন',
+
           'transaction_methods': 'পেমেন্ট পদ্ধতি',
           'transactions': 'লেনদেন',
           'faq': 'সাধারণ প্রশ্ন',

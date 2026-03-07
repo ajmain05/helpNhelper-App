@@ -353,4 +353,77 @@ class AuthService {
           backgroundColor: MyColors.appColor);
     }
   }
+
+  /// Updates the authenticated user's profile on the server.
+  /// [name] and [mobile] are optional text fields.
+  /// [photoPath] is the local file path of the new profile photo (optional).
+  Future<bool> updateProfile({
+    String? name,
+    String? mobile,
+    String? photoPath,
+  }) async {
+    final box = GetStorage();
+    final token = box.read<String>('access_token') ?? '';
+
+    try {
+      final request =
+          http.MultipartRequest('POST', Uri.parse(updateProfileApi));
+      request.headers.addAll({
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      });
+
+      if (name != null && name.trim().isNotEmpty) {
+        request.fields['name'] = name.trim();
+      }
+      if (mobile != null && mobile.trim().isNotEmpty) {
+        request.fields['mobile'] = mobile.trim();
+      }
+      if (photoPath != null && photoPath.isNotEmpty) {
+        request.files
+            .add(await http.MultipartFile.fromPath('photo', photoPath));
+      }
+
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        // Update local user data
+        final authCtrl = Get.find<AuthController>();
+        final u = authCtrl.userData.value;
+        authCtrl.userData.value = UserModel(
+          id: u.id,
+          sid: u.sid,
+          name: data['user']['name'] ?? u.name,
+          email: u.email,
+          mobile: data['user']['mobile'] ?? u.mobile,
+          photo: data['user']['photo'] ?? u.photo,
+          type: u.type,
+          status: u.status,
+          permanentAddress: u.permanentAddress,
+          presentAddress: u.presentAddress,
+          officeAddress: u.officeAddress,
+          licenseNo: u.licenseNo,
+          category: u.category,
+        );
+        Get.find<AuthController>().isUpdatingProfile.value = false;
+        return true;
+      } else {
+        Get.snackbar('Error', data['message'] ?? 'Update failed',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.BOTTOM);
+        Get.find<AuthController>().isUpdatingProfile.value = false;
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar('Error', e.toString(),
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      Get.find<AuthController>().isUpdatingProfile.value = false;
+      return false;
+    }
+  }
 }

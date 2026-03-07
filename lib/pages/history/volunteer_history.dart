@@ -19,7 +19,9 @@ class _VolunteerHistoryState extends State<VolunteerHistory> {
   @override
   void initState() {
     super.initState();
-    Get.find<HomeController>().getVolunteerHistory();
+    Future.delayed(Duration.zero, () {
+      Get.find<HomeController>().getVolunteerHistory();
+    });
   }
 
   Color _statusColor(String status) {
