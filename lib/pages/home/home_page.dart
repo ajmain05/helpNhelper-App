@@ -132,13 +132,21 @@ class _HomePageState extends State<HomePage> {
                       itemBuilder: (context, index) {
                         final cat = controller.campaignCategoryList[index];
 
+                        // ── Hide sub-categories (which are actually campaign titles in this DB) ──
+                        if (cat.parentId != null)
+                          return const SizedBox.shrink();
+
                         // ── Hide mosque/graveyard categories ──
                         final tLow = (cat.title ?? '').toLowerCase();
                         final bool isHidden = tLow.contains('mosque') ||
                             tLow.contains('masjid') ||
                             tLow.contains('মসজিদ') ||
                             tLow.contains('কবর') ||
-                            tLow.contains('kabor');
+                            tLow.contains('kabor') ||
+                            tLow.contains('tube well') ||
+                            tLow.contains('নলকূপ') ||
+                            tLow.contains('শহীদ') ||
+                            tLow.contains('martyr');
                         if (isHidden) return const SizedBox.shrink();
 
                         final bool isSelected = index == selectedCategory;
@@ -230,9 +238,9 @@ class _HomePageState extends State<HomePage> {
 
             // ── Ongoing Campaigns ──────────────────────────────────────────────
             SectionHeader(
-              title: "Ongoing Campaigns",
+              title: "Current Campaigns",
               onSeeAllTap: () => Get.to(CampaignList(
-                  title: "Ongoing Campaigns",
+                  title: "Current Campaigns",
                   list: controller.ongoingCampaigns)),
             ),
             const SizedBox(height: 12),
@@ -263,7 +271,7 @@ class _HomePageState extends State<HomePage> {
             // These are filtered from the same campaignList, so when an
             // ongoing campaign hits 100%, it automatically moves here.
             SectionHeader(
-              title: "Successful Campaigns",
+              title: "Ongoing Campaigns",
               onSeeAllTap: () => Get.to(SuccessStories()),
             ),
 
@@ -320,7 +328,7 @@ class _HomePageState extends State<HomePage> {
             // ── Our Work / Success Stories ────────────────────────────────────
             // Shows success stories from the admin panel (before/after photos).
             SectionHeader(
-              title: "Our Work",
+              title: "Our Works",
               onSeeAllTap: () => Get.to(SuccessStories()),
             ),
 
@@ -546,6 +554,40 @@ class _CategoryMeta {
         gradientSelected: const [Color(0xFF8D6E63), Color(0xFF4E342E)],
         gradientUnselected: const [Color(0xFFEFEBE9), Color(0xFFD7CCC8)],
         label: title.length > 10 ? '${title.substring(0, 8)}…' : title,
+      );
+    }
+
+    // ─── Van / Rickshaw / Pushcart ────────────────────────
+    if (t.contains('ভ্যান') ||
+        t.contains('rickshaw') ||
+        t.contains('pushcart')) {
+      return _CategoryMeta(
+        icon: Icons.pedal_bike_rounded, // Alternative to rickshaw/van
+        gradientSelected: const [Color(0xFF8D6E63), Color(0xFF5D4037)],
+        gradientUnselected: const [Color(0xFFEFEBE9), Color(0xFFD7CCC8)],
+        label: title.length > 12 ? '${title.substring(0, 10)}…' : title,
+      );
+    }
+
+    // ─── Martyr / Shaheed Family ─────────────────────────
+    if (t.contains('শহীদ') || t.contains('martyr') || t.contains('পরিবা')) {
+      return _CategoryMeta(
+        icon: Icons.diversity_1_rounded,
+        gradientSelected: const [Color(0xFFD32F2F), Color(0xFFC62828)],
+        gradientUnselected: const [Color(0xFFFFEBEE), Color(0xFFFFCDD2)],
+        label: title.length > 12 ? '${title.substring(0, 10)}…' : title,
+      );
+    }
+
+    // ─── Small Business / Micro Enterprise ────────────────
+    if (t.contains('ক্ষুদ্র') ||
+        t.contains('business') ||
+        t.contains('ব্যবসা')) {
+      return _CategoryMeta(
+        icon: Icons.storefront_rounded,
+        gradientSelected: const [Color(0xFFFBC02D), Color(0xFFF57F17)],
+        gradientUnselected: const [Color(0xFFFFFDE7), Color(0xFFFFF9C4)],
+        label: title.length > 12 ? '${title.substring(0, 10)}…' : title,
       );
     }
 
