@@ -14,6 +14,7 @@ import 'package:helpnhelper/pages/history/donor_history.dart';
 import 'package:helpnhelper/pages/history/seeker_history.dart';
 import 'package:helpnhelper/pages/history/volunteer_history.dart';
 import 'package:helpnhelper/pages/login/landing_page.dart';
+import 'package:helpnhelper/pages/profile/wallet_dashboard.dart';
 import 'package:helpnhelper/pages/seeker/request_for_fund.dart';
 import 'package:helpnhelper/pages/volunteer/transaction_list.dart';
 import 'package:helpnhelper/pages/volunteer/transaction_method_list.dart';
@@ -137,8 +138,9 @@ class MyDrawer extends StatelessWidget {
                       onTap: () {
                         if (userType == "seeker") {
                           Get.to(() => SeekerHistory());
+                        } else if (userType == "corporate-donor") {
+                          Get.to(() => const WalletDashboard());
                         } else if (userType == "donor" ||
-                            userType == "corporate-donor" ||
                             userType == "organization") {
                           Get.to(() => DonorHistory());
                         } else if (userType == "volunteer") {
