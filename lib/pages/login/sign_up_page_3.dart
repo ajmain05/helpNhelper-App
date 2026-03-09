@@ -64,8 +64,8 @@ class _SignUpPage3State extends State<SignUpPage3> {
     final fieldBg = isDark ? const Color(0xFF1A1D27) : Colors.white;
     final borderColor = isDark ? const Color(0xFF2D3147) : Colors.grey.shade200;
     final authCtrl = Get.find<AuthController>();
-    final isVolunteerOrOrg = authCtrl.type.value != 'donor' &&
-        authCtrl.type.value != 'corporate_donor';
+    final isVolunteerOrSeeker =
+        authCtrl.type.value == 'seeker' || authCtrl.type.value == 'volunteer';
 
     return Obx(() => Visibility(
           visible: !authCtrl.isLoading.value,
@@ -144,8 +144,8 @@ class _SignUpPage3State extends State<SignUpPage3> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Profile Photo — only for non-donor types
-                            if (isVolunteerOrOrg) ...[
+                            // Profile Photo
+                            if (isVolunteerOrSeeker) ...[
                               _sectionHeader("Profile Photo",
                                   Icons.person_pin_circle_outlined, textColor),
                               const SizedBox(height: 12),
@@ -446,10 +446,9 @@ class _SignUpPage3State extends State<SignUpPage3> {
                                       borderRadius: BorderRadius.circular(14)),
                                 ),
                                 onPressed: () {
-                                  // For donor/corporate_donor, skip profile image requirement
-                                  final needsImage = authCtrl.type.value !=
-                                          'donor' &&
-                                      authCtrl.type.value != 'corporate_donor';
+                                  final needsImage =
+                                      authCtrl.type.value == 'seeker' ||
+                                          authCtrl.type.value == 'volunteer';
 
                                   if (needsImage &&
                                       authCtrl.profileImage.isEmpty) {

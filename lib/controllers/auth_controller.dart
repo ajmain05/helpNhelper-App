@@ -6,6 +6,7 @@ import 'package:helpnhelper/models/division_model.dart';
 import 'package:helpnhelper/models/upazila_model.dart';
 import 'package:helpnhelper/models/user_model.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:get_storage/get_storage.dart';
 
 import '../service/auth_service.dart';
 
@@ -56,6 +57,16 @@ class AuthController extends GetxController {
 
   getInitialData() {
     getCountry();
+    final box = GetStorage();
+    final savedUser = box.read('userData');
+    if (savedUser != null) {
+      userData.value = UserModel.fromJson(savedUser);
+    } else {
+      final token = box.read<String>('access_token');
+      if (token != null && token.isNotEmpty) {
+        AuthService().fetchUserProfile();
+      }
+    }
   }
 
   getCountry() {

@@ -29,9 +29,12 @@ class StatsCard extends StatelessWidget {
         children: [
           Icon(icon, color: MyColors.primary, size: 24),
           const SizedBox(height: DesignSystem.spacingXS),
-          Text(
-            value,
-            style: DesignSystem.bodyBold.copyWith(fontSize: 14),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: DesignSystem.bodyBold.copyWith(fontSize: 14),
+            ),
           ),
           Text(
             label,

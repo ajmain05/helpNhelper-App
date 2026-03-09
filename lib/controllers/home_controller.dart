@@ -4,6 +4,7 @@ import 'package:helpnhelper/models/campaign_model.dart';
 import 'package:helpnhelper/models/seeker_history_model.dart';
 import 'package:helpnhelper/models/successStoryModel.dart';
 import 'package:helpnhelper/models/volunteer_historyModel.dart';
+import 'package:helpnhelper/models/donation_history_model.dart';
 import 'package:helpnhelper/pages/donation/donation_page.dart';
 import 'package:helpnhelper/pages/home/in_app_web_page.dart';
 import 'package:helpnhelper/service/home_service.dart';
@@ -16,8 +17,10 @@ class HomeController extends GetxController {
   var isSignedUp = false.obs;
   var isLoading = false.obs;
   var isLoadingCampaign = false.obs;
+  var isLoadingDonationHistory = false.obs;
   var service = HomeService();
   List<CampaignModel> campaignList = <CampaignModel>[].obs;
+  List<DonationHistoryModel> donationHistoryList = <DonationHistoryModel>[].obs;
   List<SeekerHistoryModel> seekerHistoryList = <SeekerHistoryModel>[].obs;
   List<VolunteerHistoryModel> volunteerHistoryList =
       <VolunteerHistoryModel>[].obs;
@@ -81,6 +84,7 @@ class HomeController extends GetxController {
   void increment() => count.value++;
 
   getInitialData() {
+    getDonationHistory();
     getCampaignCategory();
     getFeaturedCampaign();
     getAllCampaign();
@@ -141,6 +145,12 @@ class HomeController extends GetxController {
     service.getSeekerHistory();
   }
 
+  getDonationHistory() {
+    isLoadingDonationHistory.value = true;
+    donationHistoryList.clear();
+    service.getDonationHistory();
+  }
+
   getVolunteerHistory() {
     volunteerHistoryList.clear();
     service.getVolunteerHistory();
@@ -180,6 +190,90 @@ class HomeController extends GetxController {
         borderRadius: 12,
         icon: const Icon(Icons.celebration_rounded, color: Colors.white),
       );
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // In-App Notification: detect supported campaigns that hit 100% or "Our Works"
+  // ────────────────────────────────────────────────────────────────────────────
+  void checkTrustNotifications() {
+    if (donationHistoryList.isEmpty) return;
+
+    final box = GetStorage();
+    // Keep track of which (campaign_id + status) we already notified the donor about
+    final List<dynamic> notifiedTrusts =
+        (box.read<List>('notified_trust_campaigns') ?? []);
+
+    int newlyFundedCount = 0;
+    int newlyCompletedCount = 0;
+
+    List<String> newTrustsToSave = [];
+
+    for (var donation in donationHistoryList) {
+      if (donation.campaign == null) continue;
+
+      final campaign = donation.campaign!;
+      final cId = campaign.id.toString();
+
+      // Check 100% funded (ongoing)
+      final raised = double.tryParse(campaign.totalRaised ?? '0') ?? 0;
+      final goal = double.tryParse(campaign.amount ?? '1') ?? 1;
+
+      if (goal > 0 && raised >= goal) {
+        String key = "${cId}_funded";
+        if (!notifiedTrusts.contains(key) && !newTrustsToSave.contains(key)) {
+          newlyFundedCount++;
+          newTrustsToSave.add(key);
+        }
+      }
+
+      // Check Completed / Our Works
+      // Usually status 'completed' or 'success' defines this in the backend
+      if (campaign.status?.toLowerCase() == 'completed' ||
+          campaign.status?.toLowerCase() == 'success') {
+        String key = "${cId}_completed";
+        if (!notifiedTrusts.contains(key) && !newTrustsToSave.contains(key)) {
+          newlyCompletedCount++;
+          newTrustsToSave.add(key);
+        }
+      }
+    }
+
+    if (newTrustsToSave.isNotEmpty) {
+      final updatedTrusts = [...notifiedTrusts, ...newTrustsToSave];
+      box.write('notified_trust_campaigns', updatedTrusts);
+
+      // Trigger snackbar for newly funded supported campaigns
+      if (newlyFundedCount > 0) {
+        Get.snackbar(
+          '💙 Thank you for your support!',
+          '$newlyFundedCount of your supported campaigns reached 100% goal and work has started!',
+          backgroundColor: Colors.blue.shade600,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 5),
+          snackPosition: SnackPosition.TOP,
+          margin: const EdgeInsets.all(12),
+          borderRadius: 12,
+          icon: const Icon(Icons.handshake, color: Colors.white),
+        );
+      }
+
+      // Trigger snackbar for newly completed supported campaigns ("Our Works")
+      if (newlyCompletedCount > 0) {
+        Future.delayed(const Duration(seconds: 2), () {
+          Get.snackbar(
+            '✅ Work Completed!',
+            '$newlyCompletedCount of your supported campaigns has been successfully completed.',
+            backgroundColor: Colors.green.shade600,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 5),
+            snackPosition: SnackPosition.TOP,
+            margin: const EdgeInsets.all(12),
+            borderRadius: 12,
+            icon: const Icon(Icons.check_circle, color: Colors.white),
+          );
+        });
+      }
     }
   }
 }

@@ -8,6 +8,7 @@ import 'package:helpnhelper/models/campaign_model.dart';
 import 'package:helpnhelper/pages/home/in_app_web_page.dart';
 import 'package:helpnhelper/utils/design_system.dart';
 import 'package:helpnhelper/utils/my_colors.dart';
+import 'package:helpnhelper/controllers/home_controller.dart';
 
 class DonationPage extends StatefulWidget {
   final CampaignModel campaign;
@@ -167,7 +168,21 @@ class _DonationPageState extends State<DonationPage> {
 
       if (sslUrl != null && sslUrl.startsWith('http')) {
         // ✅ Open SSLCommerz directly — donation web form never shown
-        Get.to(() => InAppWebPage(url: sslUrl!, title: 'Secure Payment'));
+        await Get.to(() => InAppWebPage(url: sslUrl!, title: 'Secure Payment'));
+
+        // When the user returns from the payment gateway, instantly sync history
+        // to catch any newly created donation records.
+        Get.find<HomeController>().getInitialData();
+
+        // Pop the donation sheet/page to return to the app seamlessly
+        Get.back();
+
+        Get.snackbar('Syncing Data',
+            'Updating your donation history and supported campaigns...',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: const Color(0xFF00C896),
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3));
       } else {
         Get.snackbar(
             'Error', 'Payment gateway did not respond. Please try again.',

@@ -10,6 +10,7 @@ import 'package:helpnhelper/pages/login/sign_in_page.dart';
 import 'package:helpnhelper/pages/login/sign_up_page_1.dart';
 import 'package:helpnhelper/utils/my_colors.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:helpnhelper/pages/profile/wallet_dashboard.dart';
 
 class ProfilePage extends StatefulWidget {
   final bool showBackButton;
@@ -56,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
         return const Color(0xFF5C6BC0);
       case 'organization':
         return const Color(0xFFFF7043);
-      case 'corporate_donor':
+      case 'corporate-donor':
         return const Color(0xFF7C4DFF);
       case 'guest':
         return const Color(0xFF78909C);
@@ -73,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
         return 'Fund Seeker';
       case 'organization':
         return 'Organization';
-      case 'corporate_donor':
+      case 'corporate-donor':
         return 'Corporate Donor';
       case 'guest':
         return 'Guest';
@@ -90,7 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
         return Icons.support_agent_rounded;
       case 'organization':
         return Icons.business_rounded;
-      case 'corporate_donor':
+      case 'corporate-donor':
         return Icons.corporate_fare_rounded;
       case 'guest':
         return Icons.person_outline_rounded;
@@ -301,17 +302,23 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
             // ── Stats Row (donors) ──────────────────────────────────────────
-            if (userType == 'donor' || userType == 'corporate_donor')
+            if (userType == 'donor' || userType == 'corporate-donor')
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
                   child: Obx(() {
                     final ctrl = Get.find<HomeController>();
+
+                    double myTotal = 0;
+                    for (var history in ctrl.donationHistoryList) {
+                      myTotal += double.tryParse(history.amount ?? '0') ?? 0;
+                    }
+
                     return Row(
                       children: [
                         _statCard(
                             'Total Donated',
-                            'Tk ${ctrl.totalDonated.value}',
+                            'Tk ${myTotal.toStringAsFixed(0)}',
                             Icons.favorite_rounded,
                             accent,
                             cardBg,
@@ -319,7 +326,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(width: 12),
                         _statCard(
                             'Campaigns',
-                            '${ctrl.successfulCampaigns.length}+',
+                            '${ctrl.donationHistoryList.length}',
                             Icons.emoji_events_rounded,
                             const Color(0xFF00C896),
                             cardBg,
@@ -327,6 +334,71 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     );
                   }),
+                ),
+              ),
+
+            // ── Corporate Wallet Tracker CTA ─────────────────────────────────
+            if (userType == 'corporate-donor')
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: InkWell(
+                    onTap: () => Get.to(() => const WalletDashboard()),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            MyColors.primary,
+                            const Color(0xFF00C896),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                              color: MyColors.primary.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4)),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                                Icons.account_balance_wallet_rounded,
+                                color: Colors.white),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Track My Fund',
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16)),
+                                Text('View remaining balance and allocations',
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.white.withOpacity(0.9),
+                                        fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded,
+                              color: Colors.white, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
 
@@ -353,26 +425,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         u.status ?? 'Active', textColor, subColor, fieldBg),
                   ]),
                   const SizedBox(height: 20),
-                  if (userType != 'donor') ...[
-                    _sectionTitle('Address Information', textColor),
-                    _infoCard(cardBg, [
-                      if (u.presentAddress != null &&
-                          u.presentAddress!.isNotEmpty)
-                        _infoRow(Icons.home_rounded, 'Present Address',
-                            u.presentAddress!, textColor, subColor, fieldBg),
-                      if (u.permanentAddress != null &&
-                          u.permanentAddress!.isNotEmpty)
-                        _infoRow(Icons.location_on_rounded, 'Permanent Address',
-                            u.permanentAddress!, textColor, subColor, fieldBg),
-                      if (u.officeAddress != null &&
-                          u.officeAddress!.isNotEmpty)
-                        _infoRow(Icons.business_rounded, 'Office Address',
-                            u.officeAddress!, textColor, subColor, fieldBg),
-                    ]),
-                    const SizedBox(height: 20),
-                  ],
+                  const SizedBox(height: 20),
                   if ((userType == 'organization' ||
-                          userType == 'corporate_donor') &&
+                          userType == 'corporate-donor') &&
                       u.licenseNo != null) ...[
                     _sectionTitle('Organization Details', textColor),
                     _infoCard(cardBg, [
@@ -384,14 +439,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     ]),
                     const SizedBox(height: 20),
                   ],
-                  if (userType == 'donor' || userType == 'corporate_donor') ...[
+                  if (userType == 'donor' || userType == 'corporate-donor') ...[
                     _sectionTitle('Your Supported Campaigns', textColor),
                     Obx(() {
                       final ctrl = Get.find<HomeController>();
-                      final list = [
-                        ...ctrl.ongoingCampaigns,
-                        ...ctrl.successfulCampaigns
-                      ];
+                      final list = ctrl.donationHistoryList;
                       if (list.isEmpty) {
                         return Container(
                           padding: const EdgeInsets.all(20),
@@ -413,17 +465,21 @@ class _ProfilePageState extends State<ProfilePage> {
                       }
                       return Column(
                         children: list
+                            .where((d) => d.campaign != null)
                             .take(5)
-                            .map((c) => _campaignTrackCard(
-                                c.title ?? 'Campaign',
-                                c.totalDonation ?? c.totalRaised ?? '0',
-                                c.amount ?? '0',
-                                accent,
-                                cardBg,
-                                textColor,
-                                subColor,
-                                fieldBg))
-                            .toList(),
+                            .map((d) {
+                          final c = d.campaign!;
+                          return _campaignTrackCard(
+                              c.title ?? 'Campaign',
+                              c.totalRaised ?? '0',
+                              c.amount ?? '0',
+                              accent,
+                              cardBg,
+                              textColor,
+                              subColor,
+                              fieldBg,
+                              myDonation: d.amount ?? '0');
+                        }).toList(),
                       );
                     }),
                     const SizedBox(height: 20),
@@ -605,7 +661,8 @@ class _ProfilePageState extends State<ProfilePage> {
       Color cardBg,
       Color textColor,
       Color subColor,
-      Color fieldBg) {
+      Color fieldBg,
+      {String? myDonation}) {
     double pct = 0;
     try {
       final r = double.parse(raised);
@@ -663,7 +720,10 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Text('Raised: ৳$raised',
+              Text(
+                  myDonation != null
+                      ? 'You Donated: ৳$myDonation'
+                      : 'Raised: ৳$raised',
                   style: GoogleFonts.poppins(
                       color: accent,
                       fontSize: 11,

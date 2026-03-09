@@ -5,6 +5,7 @@ import 'package:helpnhelper/models/campaign_model.dart';
 import 'package:helpnhelper/models/seeker_history_model.dart';
 import 'package:helpnhelper/models/successStoryModel.dart';
 import 'package:helpnhelper/models/volunteer_historyModel.dart';
+import 'package:helpnhelper/models/donation_history_model.dart';
 import 'package:helpnhelper/utils/api_url.dart';
 
 import 'dart:convert';
@@ -209,6 +210,33 @@ class HomeService {
       }
     } catch (e) {
       print('Stats fetch error: $e');
+    }
+  }
+
+  Future<void> getDonationHistory() async {
+    var url = Uri.parse(donationHistoryApi);
+    var box = GetStorage();
+    var response = await http.get(
+      url,
+      headers: {
+        "Accept": "application/json",
+        'Authorization': 'Bearer ${box.read("access_token")}'
+      },
+    );
+    try {
+      if (response.statusCode == 200) {
+        var jsonData = json.decode(response.body);
+        final ctrl = Get.find<HomeController>();
+        ctrl.donationHistoryList.clear();
+        for (var data in jsonData['data']) {
+          ctrl.donationHistoryList.add(DonationHistoryModel.fromJson(data));
+        }
+        ctrl.checkTrustNotifications(); // Trigger the notification logic after fetching
+      }
+    } catch (e) {
+      print('Donation history fetch error: $e');
+    } finally {
+      Get.find<HomeController>().isLoadingDonationHistory.value = false;
     }
   }
 

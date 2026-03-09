@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:helpnhelper/controllers/auth_controller.dart';
 import 'package:helpnhelper/pages/login/sign_up_page_2.dart';
 import 'package:helpnhelper/pages/login/sign_up_page_3.dart';
+
 import 'package:helpnhelper/utils/my_colors.dart';
 
 class SignUpPage1 extends StatefulWidget {
@@ -40,7 +41,7 @@ class _SignUpPage1State extends State<SignUpPage1>
             description: 'role_donor_desc'.tr,
             gradient: [const Color(0xFFEF5350), const Color(0xFFC62828)]),
         _AccountType(
-            value: 'corporate_donor',
+            value: 'corporate-donor',
             label: 'role_corporate_donor'.tr,
             icon: Icons.business,
             description: 'role_corporate_donor_desc'.tr,
@@ -343,8 +344,8 @@ class _SignUpPage1State extends State<SignUpPage1>
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          if (controller.type.value == 'donor' ||
-                              controller.type.value == 'corporate_donor') {
+                          if (controller.type.value != 'seeker' &&
+                              controller.type.value != 'volunteer') {
                             Get.to(SignUpPage3());
                           } else {
                             Get.to(SignUpPage2());

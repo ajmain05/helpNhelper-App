@@ -116,7 +116,8 @@ class AuthService {
         Get.find<AuthController>().passwordController.text;
     request.fields['password_confirmation'] =
         Get.find<AuthController>().confirmPasswordController.text;
-    if (Get.find<AuthController>().type.value != 'donor') {
+    if (Get.find<AuthController>().type.value == 'seeker' ||
+        Get.find<AuthController>().type.value == 'volunteer') {
       request.fields['upazila'] = Get.find<AuthController>().upazilaId.value;
       request.fields['permanent_address'] =
           Get.find<AuthController>().permanentAddressController.text;
@@ -124,7 +125,9 @@ class AuthService {
           Get.find<AuthController>().presentAddressController.text;
     }
     request.fields['terms'] = "1";
-    if (Get.find<AuthController>().type.value != 'donor') {
+
+    if (Get.find<AuthController>().type.value == 'seeker' ||
+        Get.find<AuthController>().type.value == 'volunteer') {
       request.files.add(await http.MultipartFile.fromPath(
           "auth_file", Get.find<AuthController>().nidImage[0].path));
       request.files.add(await http.MultipartFile.fromPath(
@@ -184,6 +187,7 @@ class AuthService {
         print(responsedData["user"]);
         box.write('access_token', responsedData["token"]);
         box.write('type', responsedData["user"]['type']);
+        box.write('userData', responsedData["user"]);
         Get.find<AuthController>().userData.value =
             UserModel.fromJson(responsedData['user']);
         Get.find<AuthController>().isLoading.value = false;
@@ -407,6 +411,7 @@ class AuthService {
           licenseNo: u.licenseNo,
           category: u.category,
         );
+        box.write('userData', authCtrl.userData.value.toJson());
         Get.find<AuthController>().isUpdatingProfile.value = false;
         return true;
       } else {
@@ -424,6 +429,39 @@ class AuthService {
           snackPosition: SnackPosition.BOTTOM);
       Get.find<AuthController>().isUpdatingProfile.value = false;
       return false;
+    }
+  }
+
+  /// Fetches the user profile from the server using the existing token.
+  /// Used primarily to self-heal missing profile data locally upon hot restarts.
+  Future<void> fetchUserProfile() async {
+    final box = GetStorage();
+    final token = box.read<String>('access_token');
+    if (token == null || token.isEmpty) return;
+
+    try {
+      var url = Uri.parse(userProfileApi);
+      var response = await http.get(
+        url,
+        headers: {
+          "Accept": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        // The API might return user inside 'user' or 'data'.
+        // This is a defensive check based on typical Laravel structures.
+        var userJson = data['user'] ?? data['data'];
+        if (userJson != null) {
+          box.write('userData', userJson);
+          Get.find<AuthController>().userData.value =
+              UserModel.fromJson(userJson);
+        }
+      }
+    } catch (e) {
+      print('fetchUserProfile error: $e');
     }
   }
 }

@@ -138,7 +138,7 @@ class MyDrawer extends StatelessWidget {
                         if (userType == "seeker") {
                           Get.to(() => SeekerHistory());
                         } else if (userType == "donor" ||
-                            userType == "corporate_donor" ||
+                            userType == "corporate-donor" ||
                             userType == "organization") {
                           Get.to(() => DonorHistory());
                         } else if (userType == "volunteer") {
@@ -447,7 +447,7 @@ class MyDrawer extends StatelessWidget {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: !langCtrl.isBangla
                                 ? const Color(0xFF6366F1)
@@ -477,7 +477,7 @@ class MyDrawer extends StatelessWidget {
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: langCtrl.isBangla
                                 ? const Color(0xFF6366F1)

@@ -19,7 +19,7 @@ class _DonorHistoryState extends State<DonorHistory> {
   void initState() {
     super.initState();
     Future.delayed(Duration.zero, () {
-      Get.find<HomeController>().getAllCampaign();
+      Get.find<HomeController>().getDonationHistory();
     });
   }
 
@@ -82,8 +82,14 @@ class _DonorHistoryState extends State<DonorHistory> {
 
                       // Summary stats
                       Obx(() {
-                        final totalDonated = controller.totalDonated.value;
-                        final campaigns = controller.campaignList.length;
+                        double myTotal = 0;
+                        for (var history in controller.donationHistoryList) {
+                          myTotal +=
+                              double.tryParse(history.amount ?? '0') ?? 0;
+                        }
+
+                        final totalDonated = myTotal.toStringAsFixed(0);
+                        final campaigns = controller.donationHistoryList.length;
                         return Row(
                           children: [
                             _statCard("Total Donated", "Tk $totalDonated",
@@ -104,7 +110,7 @@ class _DonorHistoryState extends State<DonorHistory> {
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             sliver: Obx(() {
-              if (controller.isLoadingCampaign.value) {
+              if (controller.isLoadingDonationHistory.value) {
                 return SliverFillRemaining(
                   child: Center(
                     child: CircularProgressIndicator(
@@ -115,7 +121,7 @@ class _DonorHistoryState extends State<DonorHistory> {
                 );
               }
 
-              if (controller.campaignList.isEmpty) {
+              if (controller.donationHistoryList.isEmpty) {
                 return SliverFillRemaining(
                   child: Center(
                     child: Column(
@@ -146,7 +152,10 @@ class _DonorHistoryState extends State<DonorHistory> {
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final campaign = controller.campaignList[index];
+                    final donation = controller.donationHistoryList[index];
+                    final campaign = donation.campaign;
+
+                    if (campaign == null) return const SizedBox();
 
                     // Calculate progress using totalRaised / amount safely
                     double percentage = 0;
@@ -235,16 +244,16 @@ class _DonorHistoryState extends State<DonorHistory> {
                                             fontWeight: FontWeight.w600),
                                       ),
                                       const SizedBox(width: 16),
-                                      Icon(Icons.favorite,
+                                      Icon(Icons.volunteer_activism,
                                           size: 14,
                                           color: const Color(0xFFEF5350)
                                               .withOpacity(0.8)),
                                       const SizedBox(width: 6),
                                       Text(
-                                        "Raised: Tk ${campaign.totalRaised ?? 0}",
+                                        "You Donated: Tk ${donation.amount ?? 0}",
                                         style: DesignSystem.caption.copyWith(
                                             color: const Color(0xFFEF5350),
-                                            fontWeight: FontWeight.w600),
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
@@ -299,7 +308,7 @@ class _DonorHistoryState extends State<DonorHistory> {
                                   ],
 
                                   // Date created
-                                  if (campaign.createdAt != null) ...[
+                                  if (donation.createdAt != null) ...[
                                     const SizedBox(height: 6),
                                     Row(
                                       children: [
@@ -307,7 +316,7 @@ class _DonorHistoryState extends State<DonorHistory> {
                                             size: 12, color: hintColor),
                                         const SizedBox(width: 4),
                                         Text(
-                                          campaign.createdAt.toString(),
+                                          donation.createdAt.toString(),
                                           style: DesignSystem.caption.copyWith(
                                               fontSize: 11, color: hintColor),
                                         ),
@@ -322,7 +331,7 @@ class _DonorHistoryState extends State<DonorHistory> {
                       ),
                     );
                   },
-                  childCount: controller.campaignList.length,
+                  childCount: controller.donationHistoryList.length,
                 ),
               );
             }),
