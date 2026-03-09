@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:helpnhelper/utils/my_colors.dart';
 import 'package:helpnhelper/models/wallet_model.dart';
+import 'package:helpnhelper/pages/profile/wallet_deposit_screen.dart';
 import 'package:helpnhelper/service/wallet_service.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
 class WalletDashboard extends StatefulWidget {
   const WalletDashboard({Key? key}) : super(key: key);
@@ -32,6 +34,150 @@ class _WalletDashboardState extends State<WalletDashboard> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _handleDeposit() async {
+    // Show amount input BottomSheet
+    final amountController = TextEditingController();
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return _buildDepositSheet(amountController);
+      },
+    );
+
+    if (result == true) {
+      // Refresh wallet balance after successful deposit
+      _fetchData();
+    }
+  }
+
+  Widget _buildDepositSheet(TextEditingController controller) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? const Color(0xFF1F222E) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF1A1C1E);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Add Funds',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Enter the amount you would like to deposit to your corporate wallet.',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: textColor.withOpacity(0.6),
+              ),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: controller,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+              decoration: InputDecoration(
+                prefixText: '৳ ',
+                prefixStyle: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: textColor.withOpacity(0.5),
+                ),
+                filled: true,
+                fillColor:
+                    isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                hintText: '0.00',
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final amount = double.tryParse(controller.text) ?? 0;
+                  if (amount < 10) {
+                    Get.snackbar(
+                      'Invalid Amount',
+                      'Minimum deposit is ৳10',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.redAccent,
+                      colorText: Colors.white,
+                    );
+                    return;
+                  }
+
+                  Get.dialog(
+                    const Center(child: CircularProgressIndicator()),
+                    barrierDismissible: false,
+                  );
+
+                  // Initiate Payment
+                  final redirectUrl =
+                      await _walletService.initiateDeposit(amount);
+
+                  Get.back(); // close loading
+
+                  if (redirectUrl != null) {
+                    Get.back(); // close bottom sheet
+                    final success = await Get.to(
+                        () => WalletDepositScreen(uploadUrl: redirectUrl));
+                    if (success == true) {
+                      Get.back(
+                          result:
+                              true); // pass success signal back to dashboard
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: MyColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Proceed to Payment',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   String _formatCurrency(double amount) {
@@ -159,10 +305,25 @@ class _WalletDashboardState extends State<WalletDashboard> {
                             childCount: _walletData!.allocations.length,
                           ),
                         ),
-                      const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                      const SliverToBoxAdapter(
+                          child: SizedBox(height: 100)), // Space for FAB
                     ],
                   ),
                 ),
+      floatingActionButton: _walletData != null
+          ? FloatingActionButton.extended(
+              onPressed: _handleDeposit,
+              backgroundColor: MyColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              icon: const Icon(Icons.add_card_rounded),
+              label: Text(
+                'Add Funds',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
