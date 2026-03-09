@@ -14,7 +14,8 @@ class WalletDashboard extends StatefulWidget {
   State<WalletDashboard> createState() => _WalletDashboardState();
 }
 
-class _WalletDashboardState extends State<WalletDashboard> {
+class _WalletDashboardState extends State<WalletDashboard>
+    with WidgetsBindingObserver {
   final WalletService _walletService = WalletService();
   bool _isLoading = true;
   CorporateWalletData? _walletData;
@@ -22,7 +23,22 @@ class _WalletDashboardState extends State<WalletDashboard> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchData();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Re-fetch data when user comes back to the app (e.g., from clicking a notification)
+      _fetchData();
+    }
   }
 
   Future<void> _fetchData() async {
