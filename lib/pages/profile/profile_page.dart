@@ -301,8 +301,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-            // ── Stats Row (donors) ──────────────────────────────────────────
-            if (userType == 'donor' || userType == 'corporate-donor')
+            if (userType == 'donor')
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
@@ -439,7 +438,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ]),
                     const SizedBox(height: 20),
                   ],
-                  if (userType == 'donor' || userType == 'corporate-donor') ...[
+                  if (userType == 'donor') ...[
                     _sectionTitle('your_supported_campaigns'.tr, textColor),
                     Obx(() {
                       final ctrl = Get.find<HomeController>();

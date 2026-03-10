@@ -10,6 +10,7 @@ class AppTranslations extends Translations {
           'current_campaigns': 'Current Campaigns',
           'history': 'History',
           'profile': 'Profile',
+          'my_profile': 'My Profile',
           'request_for_fund': 'Request for Fund',
 
           'transaction_methods': 'Transaction Methods',
@@ -178,6 +179,7 @@ class AppTranslations extends Translations {
           'current_campaigns': 'বর্তমান ক্যাম্পেইন',
           'history': 'ইতিহাস',
           'profile': 'প্রোফাইল',
+          'my_profile': 'আমার প্রোফাইল',
           'request_for_fund': 'ফান্ডের আবেদন',
 
           'transaction_methods': 'পেমেন্ট পদ্ধতি',

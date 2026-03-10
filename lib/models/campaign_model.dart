@@ -132,7 +132,8 @@ class CampaignModel {
     _isFeatured = json['is_featured'];
     _createdAt = json['created_at'];
     _updatedAt = json['updated_at'];
-    _totalRaised = json['total_raised'];
+    _totalRaised =
+        json['total_raised']?.toString() ?? json['total_donation']?.toString();
     _totalDonation = json['total_donation']?.toString();
     _totalDonors = json['total_donors'];
     _category = json['category'] != null
