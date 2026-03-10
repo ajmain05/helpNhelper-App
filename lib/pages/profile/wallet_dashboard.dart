@@ -149,6 +149,16 @@ class _WalletDashboardState extends State<WalletDashboard>
                     );
                     return;
                   }
+                  if (amount > 100000) {
+                    Get.snackbar(
+                      'Limit Exceeded',
+                      'Maximum deposit per transaction is ৳100,000',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.redAccent,
+                      colorText: Colors.white,
+                    );
+                    return;
+                  }
 
                   Get.dialog(
                     const Center(child: CircularProgressIndicator()),

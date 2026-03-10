@@ -9,11 +9,18 @@ class LanguageController extends GetxController {
   // Default language: English
   String get currentLang => _box.read(_key) ?? 'en';
   bool get isBangla => currentLang == 'bn';
+  bool get isArabic => currentLang == 'ar';
 
   void changeLanguage(String langCode) {
     _box.write(_key, langCode);
-    final locale =
-        langCode == 'bn' ? const Locale('bn', 'BD') : const Locale('en', 'US');
+    Locale locale;
+    if (langCode == 'bn') {
+      locale = const Locale('bn', 'BD');
+    } else if (langCode == 'ar') {
+      locale = const Locale('ar', 'SA');
+    } else {
+      locale = const Locale('en', 'US');
+    }
     Get.updateLocale(locale);
     update();
   }

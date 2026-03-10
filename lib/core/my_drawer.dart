@@ -68,7 +68,7 @@ class MyDrawer extends StatelessWidget {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                 children: [
-                  _menuSectionTitle('Dashboard', isDark),
+                  _menuSectionTitle('dashboard'.tr, isDark),
                   _buildNavItem(
                     icon: Icons.dashboard_rounded,
                     label: 'home'.tr,
@@ -93,7 +93,7 @@ class MyDrawer extends StatelessWidget {
                   ),
                   _buildNavItem(
                     icon: Icons.check_circle_rounded,
-                    label: 'Our Works',
+                    label: 'our_works'.tr,
                     color: const Color(0xFFF59E0B), // Amber
                     onTap: () {
                       Get.find<HomeController>().currentIndex.value = 2;
@@ -103,7 +103,7 @@ class MyDrawer extends StatelessWidget {
                     isDark: isDark,
                   ),
                   const SizedBox(height: 16),
-                  _menuSectionTitle('Explore', isDark),
+                  _menuSectionTitle('explore'.tr, isDark),
                   _buildNavItem(
                     icon: Icons.info_rounded,
                     label: 'about_us'.tr,
@@ -130,7 +130,7 @@ class MyDrawer extends StatelessWidget {
                   ),
                   if (isLoggedIn) ...[
                     const SizedBox(height: 16),
-                    _menuSectionTitle('Personal', isDark),
+                    _menuSectionTitle('personal'.tr, isDark),
                     _buildNavItem(
                       icon: Icons.history_edu_rounded,
                       label: 'history'.tr,
@@ -181,7 +181,7 @@ class MyDrawer extends StatelessWidget {
                     ],
                   ],
                   const SizedBox(height: 16),
-                  _menuSectionTitle('Settings', isDark),
+                  _menuSectionTitle('settings'.tr, isDark),
                   _buildToggles(isDark),
                   const SizedBox(height: 30),
                 ],
@@ -426,83 +426,30 @@ class MyDrawer extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Text(
-                  'language'.tr,
-                  style: GoogleFonts.inter(
-                    color: isDark ? Colors.white : const Color(0xFF2D3142),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                // Beautiful Segmented Control for Language
-                Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white10 : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.all(4),
-                  child: Row(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GestureDetector(
-                        onTap: () => langCtrl.changeLanguage('en'),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: !langCtrl.isBangla
-                                ? const Color(0xFF6366F1)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: !langCtrl.isBangla
-                                ? [
-                                    const BoxShadow(
-                                        color: Colors.black12, blurRadius: 4)
-                                  ]
-                                : [],
-                          ),
-                          child: Text(
-                            'EN',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: !langCtrl.isBangla
-                                  ? Colors.white
-                                  : (isDark ? Colors.white54 : Colors.black54),
-                            ),
-                          ),
+                      Text(
+                        'language'.tr,
+                        style: GoogleFonts.inter(
+                          color:
+                              isDark ? Colors.white : const Color(0xFF2D3142),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => langCtrl.changeLanguage('bn'),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: langCtrl.isBangla
-                                ? const Color(0xFF6366F1)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: langCtrl.isBangla
-                                ? [
-                                    const BoxShadow(
-                                        color: Colors.black12, blurRadius: 4)
-                                  ]
-                                : [],
-                          ),
-                          child: Text(
-                            'বাং',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: langCtrl.isBangla
-                                  ? Colors.white
-                                  : (isDark ? Colors.white54 : Colors.black54),
-                            ),
-                          ),
-                        ),
+                      const SizedBox(height: 12),
+                      // Modern Colorful Language Cards
+                      Column(
+                        children: [
+                          _buildModernLangBtn('en', 'EN',
+                              const Color(0xFF3B82F6), langCtrl, isDark),
+                          _buildModernLangBtn('bn', 'BN',
+                              const Color(0xFF10B981), langCtrl, isDark),
+                          _buildModernLangBtn('ar', 'AR',
+                              const Color(0xFF8B5CF6), langCtrl, isDark),
+                        ],
                       ),
                     ],
                   ),
@@ -512,6 +459,77 @@ class MyDrawer extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  // ─── Modern Language Card ───────────────────────────────────────────────
+  // ─── Compact Language Card ───────────────────────────────────────────────
+  Widget _buildModernLangBtn(String code, String shortLabel, Color accentColor,
+      LanguageController langCtrl, bool isDark) {
+    final isSelected = langCtrl.currentLang == code;
+    // We override accent color to match the design (Blue for selected, grey for unselected)
+    final activeColor = const Color(0xFF4285F4);
+
+    return GestureDetector(
+      onTap: () => langCtrl.changeLanguage(code),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? activeColor.withOpacity(0.12)
+              : (isDark ? Colors.transparent : Colors.white),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? activeColor.withOpacity(0.5)
+                : (isDark ? Colors.white12 : Colors.grey.shade300),
+            width: 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Text Info
+            Text(
+              shortLabel,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isSelected
+                    ? activeColor
+                    : (isDark ? Colors.white : const Color(0xFF2D3142)),
+                letterSpacing: 2.0,
+              ),
+            ),
+            // Checkmark ring (Radio Style)
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: isSelected ? activeColor : Colors.transparent,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? activeColor
+                      : (isDark ? Colors.white24 : Colors.grey.shade300),
+                  width: 1.5,
+                ),
+              ),
+              child: isSelected
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

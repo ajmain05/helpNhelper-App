@@ -69,17 +69,17 @@ class _ProfilePageState extends State<ProfilePage> {
   String get _userTypeLabel {
     switch (userType) {
       case 'volunteer':
-        return 'Volunteer';
+        return 'role_volunteer'.tr;
       case 'seeker':
-        return 'Fund Seeker';
+        return 'fund_seeker'.tr;
       case 'organization':
-        return 'Organization';
+        return 'role_organization'.tr;
       case 'corporate-donor':
-        return 'Corporate Donor';
+        return 'role_corporate_donor'.tr;
       case 'guest':
-        return 'Guest';
+        return 'guest'.tr;
       default:
-        return 'Donor';
+        return 'role_donor'.tr;
     }
   }
 
@@ -185,7 +185,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ),
                           if (widget.showBackButton) const Spacer(),
-                          Text('My Profile',
+                          Text('my_profile'.tr,
                               style: GoogleFonts.poppins(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -317,7 +317,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     return Row(
                       children: [
                         _statCard(
-                            'Total Donated',
+                            'total_donated'.tr,
                             'Tk ${myTotal.toStringAsFixed(0)}',
                             Icons.favorite_rounded,
                             accent,
@@ -325,7 +325,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             textColor),
                         const SizedBox(width: 12),
                         _statCard(
-                            'Campaigns',
+                            'campaigns'.tr,
                             '${ctrl.donationHistoryList.length}',
                             Icons.emoji_events_rounded,
                             const Color(0xFF00C896),
@@ -381,12 +381,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Track My Fund',
+                                Text('track_my_fund'.tr,
                                     style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16)),
-                                Text('View remaining balance and allocations',
+                                Text('view_remaining_balance'.tr,
                                     style: GoogleFonts.poppins(
                                         color: Colors.white.withOpacity(0.9),
                                         fontSize: 12)),
@@ -407,21 +407,21 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
-                  _sectionTitle('Account Information', textColor),
+                  _sectionTitle('account_information'.tr, textColor),
                   _infoCard(cardBg, [
-                    _infoRow(Icons.email_outlined, 'Email',
+                    _infoRow(Icons.email_outlined, 'email'.tr,
                         u.email ?? 'Not set', textColor, subColor, fieldBg,
                         accent: accent),
-                    _infoRow(Icons.phone_android_rounded, 'Mobile',
+                    _infoRow(Icons.phone_android_rounded, 'mobile'.tr,
                         u.mobile ?? 'Not set', textColor, subColor, fieldBg),
                     _infoRow(
                         Icons.fingerprint_rounded,
-                        'Account ID',
+                        'account_id'.tr,
                         u.sid ?? u.id?.toString() ?? 'N/A',
                         textColor,
                         subColor,
                         fieldBg),
-                    _infoRow(Icons.verified_user_rounded, 'Status',
+                    _infoRow(Icons.verified_user_rounded, 'status'.tr,
                         u.status ?? 'Active', textColor, subColor, fieldBg),
                   ]),
                   const SizedBox(height: 20),
@@ -429,18 +429,18 @@ class _ProfilePageState extends State<ProfilePage> {
                   if ((userType == 'organization' ||
                           userType == 'corporate-donor') &&
                       u.licenseNo != null) ...[
-                    _sectionTitle('Organization Details', textColor),
+                    _sectionTitle('organization_details'.tr, textColor),
                     _infoCard(cardBg, [
-                      _infoRow(Icons.badge_rounded, 'License No.', u.licenseNo!,
-                          textColor, subColor, fieldBg),
+                      _infoRow(Icons.badge_rounded, 'license_no'.tr,
+                          u.licenseNo!, textColor, subColor, fieldBg),
                       if (u.category != null && u.category!.isNotEmpty)
-                        _infoRow(Icons.category_rounded, 'Category',
+                        _infoRow(Icons.category_rounded, 'category'.tr,
                             u.category!, textColor, subColor, fieldBg),
                     ]),
                     const SizedBox(height: 20),
                   ],
                   if (userType == 'donor' || userType == 'corporate-donor') ...[
-                    _sectionTitle('Your Supported Campaigns', textColor),
+                    _sectionTitle('your_supported_campaigns'.tr, textColor),
                     Obx(() {
                       final ctrl = Get.find<HomeController>();
                       final list = ctrl.donationHistoryList;
@@ -455,7 +455,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               Icon(Icons.volunteer_activism_outlined,
                                   size: 48, color: subColor.withOpacity(0.5)),
                               const SizedBox(height: 12),
-                              Text('Donate to campaigns to track them here',
+                              Text('donate_to_track'.tr,
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.poppins(
                                       color: subColor, fontSize: 13)),
@@ -485,11 +485,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
                   ],
                   if (userType == 'volunteer') ...[
-                    _sectionTitle('Task History', textColor),
+                    _sectionTitle('task_history'.tr, textColor),
                     Obx(() {
                       final ctrl = Get.find<HomeController>();
                       if (ctrl.volunteerHistoryList.isEmpty) {
-                        return _emptyCard('No tasks yet', cardBg, subColor);
+                        return _emptyCard('no_tasks_yet'.tr, cardBg, subColor);
                       }
                       return Column(
                         children: ctrl.volunteerHistoryList.take(5).map((h) {
@@ -506,12 +506,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     }),
                   ],
                   if (userType == 'seeker') ...[
-                    _sectionTitle('Fund Requests', textColor),
+                    _sectionTitle('fund_requests'.tr, textColor),
                     Obx(() {
                       final ctrl = Get.find<HomeController>();
                       if (ctrl.seekerHistoryList.isEmpty) {
                         return _emptyCard(
-                            'No fund requests yet', cardBg, subColor);
+                            'no_fund_requests_yet'.tr, cardBg, subColor);
                       }
                       return Column(
                         children: ctrl.seekerHistoryList.take(5).map((h) {
@@ -707,7 +707,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       .withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(isSuccess ? '✓ Successful' : 'Ongoing',
+                child: Text(isSuccess ? '✓ ${'successful'.tr}' : 'ongoing'.tr,
                     style: GoogleFonts.poppins(
                         color: isSuccess
                             ? const Color(0xFF00C896)
@@ -722,14 +722,14 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Text(
                   myDonation != null
-                      ? 'You Donated: ৳$myDonation'
-                      : 'Raised: ৳$raised',
+                      ? '${'you_donated'.tr}: ৳$myDonation'
+                      : '${'raised'.tr}: ৳$raised',
                   style: GoogleFonts.poppins(
                       color: accent,
                       fontSize: 11,
                       fontWeight: FontWeight.w600)),
               const SizedBox(width: 10),
-              Text('Goal: ৳$goal',
+              Text('${'goal'.tr}: ৳$goal',
                   style: GoogleFonts.poppins(color: subColor, fontSize: 11)),
             ],
           ),

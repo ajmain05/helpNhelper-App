@@ -83,12 +83,12 @@ class _ColorfulNavBar extends StatelessWidget {
     Icons.manage_accounts_rounded,
   ];
 
-  static const List<String> _tabLabels = [
-    'Home',
-    'Current',
-    'Our Works',
-    'Profile',
-  ];
+  List<String> get _tabLabels => [
+        'home'.tr,
+        'current_campaigns'.tr,
+        'our_works'.tr,
+        'profile'.tr,
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +99,6 @@ class _ColorfulNavBar extends StatelessWidget {
       final selected = ctrl.currentIndex.value;
 
       return Container(
-        height: 80,
         decoration: BoxDecoration(
           color: bg,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -111,57 +110,67 @@ class _ColorfulNavBar extends StatelessWidget {
             )
           ],
         ),
-        child: Row(
-          children: List.generate(4, (i) {
-            final isSelected = selected == i;
-            final color = _tabColors[i];
-            return Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => ctrl.currentIndex.value = i,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Icon with animated pill background
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeInOut,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isSelected ? 14 : 0,
-                          vertical: 6,
+        child: SafeArea(
+          child: Row(
+            children: List.generate(4, (i) {
+              final isSelected = selected == i;
+              final color = _tabColors[i];
+              return Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => ctrl.currentIndex.value = i,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeInOut,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Icon with animated pill background
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeInOut,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isSelected ? 14 : 0,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? color.withOpacity(0.15)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Icon(
+                            _tabIcons[i],
+                            size: isSelected ? 30 : 26,
+                            color: isSelected ? color : color.withOpacity(0.55),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? color.withOpacity(0.15)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20),
+                        const SizedBox(height: 2),
+                        // Wrap in a FittedBox to guarantee it never overflows laterally
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            _tabLabels[i],
+                            maxLines: 1,
+                            style: GoogleFonts.poppins(
+                              fontSize: isSelected ? 11.0 : 10.0,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                              color:
+                                  isSelected ? color : color.withOpacity(0.6),
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          _tabIcons[i],
-                          size: isSelected ? 30 : 26,
-                          color: isSelected ? color : color.withOpacity(0.55),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _tabLabels[i],
-                        style: GoogleFonts.poppins(
-                          fontSize: isSelected ? 11.0 : 10.0,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w600,
-                          color: isSelected ? color : color.withOpacity(0.6),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         ),
       );
     });

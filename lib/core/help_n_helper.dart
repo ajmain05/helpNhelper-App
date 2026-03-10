@@ -78,8 +78,11 @@ class HelpNHelper extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.put(LanguageController());
     final savedLang = GetStorage().read('app_language') ?? 'en';
-    final initialLocale =
-        savedLang == 'bn' ? const Locale('bn', 'BD') : const Locale('en', 'US');
+    final initialLocale = savedLang == 'bn'
+        ? const Locale('bn', 'BD')
+        : (savedLang == 'ar'
+            ? const Locale('ar', 'SA')
+            : const Locale('en', 'US'));
 
     return GetBuilder<ThemeController>(
       init: ThemeController(),
