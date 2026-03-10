@@ -160,6 +160,16 @@ class AppTranslations extends Translations {
           'wallet_balance': 'Wallet Balance',
           'allocated_used': 'Allocated',
           'add_funds': 'Add Funds',
+
+          // Drawer / Navigation extras
+          'our_works': 'Our Works',
+          'news_events': 'News & Events',
+          'blog': 'Blog',
+          'gallery': 'Gallery',
+          'volunteer_menu': 'Volunteer',
+          'notifications': 'Notifications',
+          'settings': 'Settings',
+          'help_support': 'Help & Support',
         },
         'bn_BD': {
           // Drawer Menu
@@ -319,6 +329,16 @@ class AppTranslations extends Translations {
           'wallet_balance': 'ওয়ালেট ব্যালেন্স',
           'allocated_used': 'বরাদ্দকৃত',
           'add_funds': 'তহবিল যোগ করুন',
+
+          // Drawer / Navigation extras
+          'our_works': 'আমাদের কাজ',
+          'news_events': 'সংবাদ ও ইভেন্ট',
+          'blog': 'ব্লগ',
+          'gallery': 'গ্যালারি',
+          'volunteer_menu': 'স্বেচ্ছাসেবক',
+          'notifications': 'বিজ্ঞপ্তি',
+          'settings': 'সেটিংস',
+          'help_support': 'সাহায্য ও সাপোর্ট',
         },
       };
 }
