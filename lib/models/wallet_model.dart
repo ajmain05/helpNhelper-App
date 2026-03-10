@@ -78,3 +78,47 @@ class AllocatedCampaign {
     );
   }
 }
+
+// ── Deposit Records (SSLCommerz + Cheque) ─────────────────────────────────
+class CorporateDepositRecord {
+  final int id;
+  final double amount;
+  final String method;
+  final String status;
+  final String? transactionId;
+  final String? chequeNo;
+  final String? bankName;
+  final String? adminNote;
+  final String createdAt;
+
+  CorporateDepositRecord({
+    required this.id,
+    required this.amount,
+    required this.method,
+    required this.status,
+    this.transactionId,
+    this.chequeNo,
+    this.bankName,
+    this.adminNote,
+    required this.createdAt,
+  });
+
+  factory CorporateDepositRecord.fromJson(Map<String, dynamic> json) {
+    return CorporateDepositRecord(
+      id: json['id'] ?? 0,
+      amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
+      method: json['method'] ?? 'sslcommerz',
+      status: json['status'] ?? 'pending',
+      transactionId: json['transaction_id'],
+      chequeNo: json['cheque_no'],
+      bankName: json['bank_name'],
+      adminNote: json['admin_note'],
+      createdAt: json['created_at'] ?? '',
+    );
+  }
+
+  bool get isCompleted => status == 'completed';
+  bool get isUnderReview => status == 'under_review';
+  bool get isRejected => status == 'rejected';
+  bool get isCheque => method == 'offline';
+}
