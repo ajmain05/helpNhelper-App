@@ -64,8 +64,9 @@ class _SignUpPage3State extends State<SignUpPage3> {
     final fieldBg = isDark ? const Color(0xFF1A1D27) : Colors.white;
     final borderColor = isDark ? const Color(0xFF2D3147) : Colors.grey.shade200;
     final authCtrl = Get.find<AuthController>();
-    final isVolunteerOrSeeker =
-        authCtrl.type.value == 'seeker' || authCtrl.type.value == 'volunteer';
+    final isVolunteerOrSeeker = authCtrl.type.value == 'seeker' ||
+        authCtrl.type.value == 'volunteer' ||
+        authCtrl.type.value == 'organization';
 
     return Obx(() => Visibility(
           visible: !authCtrl.isLoading.value,
@@ -446,9 +447,9 @@ class _SignUpPage3State extends State<SignUpPage3> {
                                       borderRadius: BorderRadius.circular(14)),
                                 ),
                                 onPressed: () {
-                                  final needsImage =
-                                      authCtrl.type.value == 'seeker' ||
-                                          authCtrl.type.value == 'volunteer';
+                                  final needsImage = authCtrl.type.value == 'seeker' ||
+                                      authCtrl.type.value == 'volunteer' ||
+                                      authCtrl.type.value == 'organization';
 
                                   if (needsImage &&
                                       authCtrl.profileImage.isEmpty) {

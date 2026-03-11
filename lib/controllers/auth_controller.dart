@@ -37,6 +37,10 @@ class AuthController extends GetxController {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController otpController = TextEditingController();
+  TextEditingController officeAddressController = TextEditingController();
+  TextEditingController licenseNoController = TextEditingController();
+  
+  RxList<PickedFile> licenseImage = <PickedFile>[].obs;
 
   bool passLogin = false;
   bool phoneLogin = false;
