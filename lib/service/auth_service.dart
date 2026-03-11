@@ -116,39 +116,23 @@ class AuthService {
         Get.find<AuthController>().passwordController.text;
     request.fields['password_confirmation'] =
         Get.find<AuthController>().confirmPasswordController.text;
-    final typeValue = Get.find<AuthController>().type.value;
-    
-    if (typeValue == 'seeker' || typeValue == 'volunteer' || typeValue == 'organization') {
+    if (Get.find<AuthController>().type.value == 'seeker' ||
+        Get.find<AuthController>().type.value == 'volunteer') {
       request.fields['upazila'] = Get.find<AuthController>().upazilaId.value;
-      
-      if (Get.find<AuthController>().nidImage.isNotEmpty) {
-        request.files.add(await http.MultipartFile.fromPath(
-            "auth_file", Get.find<AuthController>().nidImage[0].path));
-      }
-      
-      if (Get.find<AuthController>().profileImage.isNotEmpty) {
-        request.files.add(await http.MultipartFile.fromPath(
-            "photo", Get.find<AuthController>().profileImage[0].path));
-      }
-
-      if (typeValue == 'organization') {
-        request.fields['office_address'] = Get.find<AuthController>().officeAddressController.text;
-        request.fields['license_no'] = Get.find<AuthController>().licenseNoController.text;
-        
-        if (Get.find<AuthController>().licenseImage.isNotEmpty) {
-          request.files.add(await http.MultipartFile.fromPath(
-              "license_image", Get.find<AuthController>().licenseImage[0].path));
-        }
-      } else {
-        request.fields['permanent_address'] =
-            Get.find<AuthController>().permanentAddressController.text;
-        request.fields['present_address'] =
-            Get.find<AuthController>().presentAddressController.text;
-      }
+      request.fields['permanent_address'] =
+          Get.find<AuthController>().permanentAddressController.text;
+      request.fields['present_address'] =
+          Get.find<AuthController>().presentAddressController.text;
     }
-    
-    // Always attach terms parameter
     request.fields['terms'] = "1";
+
+    if (Get.find<AuthController>().type.value == 'seeker' ||
+        Get.find<AuthController>().type.value == 'volunteer') {
+      request.files.add(await http.MultipartFile.fromPath(
+          "auth_file", Get.find<AuthController>().nidImage[0].path));
+      request.files.add(await http.MultipartFile.fromPath(
+          "photo", Get.find<AuthController>().profileImage[0].path));
+    }
 
     final response = await request.send();
     var responsed = await http.Response.fromStream(response);

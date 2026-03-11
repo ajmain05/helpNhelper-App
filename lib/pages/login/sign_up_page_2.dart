@@ -37,14 +37,6 @@ class _SignUpPage2State extends State<SignUpPage2> {
     }
   }
 
-  PickedFile? _pickedLicenseFile;
-  Future<void> _pickLicenseImage() async {
-    _pickedLicenseFile = await _picker.getImage(source: ImageSource.gallery);
-    if (_pickedLicenseFile != null) {
-      controller.licenseImage.add(_pickedLicenseFile!);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -230,129 +222,6 @@ class _SignUpPage2State extends State<SignUpPage2> {
 
                       const SizedBox(height: 24),
 
-                      // Trade License Section (Only for Organizations)
-                      Obx(() => controller.type.value == 'organization'
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _sectionHeader("Trade License",
-                                    Icons.business_center_outlined, textColor),
-                                const SizedBox(height: 12),
-                                _buildFormField(
-                                    "Trade License Number",
-                                    controller.licenseNoController,
-                                    textColor,
-                                    hintColor,
-                                    fieldBg,
-                                    borderColor),
-                                const SizedBox(height: 14),
-                                controller.licenseImage.isEmpty
-                                    ? GestureDetector(
-                                        onTap: _pickLicenseImage,
-                                        child: Container(
-                                          height: 100,
-                                          decoration: BoxDecoration(
-                                            color: fieldBg,
-                                            borderRadius:
-                                                BorderRadius.circular(14),
-                                            border: Border.all(
-                                                color: MyColors.primary
-                                                    .withOpacity(0.4),
-                                                width: 1.5,
-                                                style: BorderStyle.solid),
-                                          ),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.all(10),
-                                                decoration: BoxDecoration(
-                                                  color: MyColors.primary
-                                                      .withOpacity(0.1),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Icon(
-                                                    Icons.upload_file,
-                                                    color: MyColors.primary,
-                                                    size: 24),
-                                              ),
-                                              const SizedBox(height: 8),
-                                              Text("Upload Trade License",
-                                                  style: GoogleFonts.poppins(
-                                                      color: MyColors.primary,
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.w500)),
-                                            ],
-                                          ),
-                                        ),
-                                      )
-                                    : SizedBox(
-                                        height: 110,
-                                        child: ListView.builder(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount:
-                                              controller.licenseImage.length,
-                                          itemBuilder: (BuildContext context,
-                                              int index) {
-                                            return Stack(
-                                              children: [
-                                                Container(
-                                                  margin: const EdgeInsets.only(
-                                                      right: 10),
-                                                  height: 100,
-                                                  width: 180,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                    image: DecorationImage(
-                                                      image: FileImage(
-                                                        File(controller
-                                                            .licenseImage[index]
-                                                            .path),
-                                                      ),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Positioned(
-                                                  top: 6,
-                                                  right: 16,
-                                                  child: GestureDetector(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        controller.licenseImage
-                                                            .removeAt(index);
-                                                      });
-                                                    },
-                                                    child: Container(
-                                                      padding: const EdgeInsets
-                                                          .all(4),
-                                                      decoration:
-                                                          const BoxDecoration(
-                                                        color: Colors.red,
-                                                        shape: BoxShape.circle,
-                                                      ),
-                                                      child: const Icon(
-                                                          Icons.close,
-                                                          color: Colors.white,
-                                                          size: 14),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                const SizedBox(height: 24),
-                              ],
-                            )
-                          : const SizedBox.shrink()),
-
                       // Location Section
                       _sectionHeader(
                           "location".tr, Icons.location_on_outlined, textColor),
@@ -511,15 +380,7 @@ class _SignUpPage2State extends State<SignUpPage2> {
                           "address_details".tr, Icons.home_outlined, textColor),
                       const SizedBox(height: 12),
 
-                      Obx(() => controller.type.value == 'organization'
-                          ? _buildFormField(
-                              "Office Address",
-                              controller.officeAddressController,
-                              textColor,
-                              hintColor,
-                              fieldBg,
-                              borderColor)
-                          : Column(
+                      Obx(() => Column(
                               children: [
                                 _buildFormField(
                                     "present_address".tr,
@@ -558,17 +419,6 @@ class _SignUpPage2State extends State<SignUpPage2> {
                               Get.snackbar(
                                 "NID Required",
                                 "Please upload your NID/Passport document",
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.redAccent,
-                                colorText: Colors.white,
-                                margin: const EdgeInsets.all(16),
-                                borderRadius: 12,
-                              );
-                            } else if (controller.type.value == 'organization' &&
-                                controller.licenseImage.isEmpty) {
-                              Get.snackbar(
-                                "Trade License Required",
-                                "Please upload your Trade License image",
                                 snackPosition: SnackPosition.BOTTOM,
                                 backgroundColor: Colors.redAccent,
                                 colorText: Colors.white,
