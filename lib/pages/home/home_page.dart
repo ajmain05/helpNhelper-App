@@ -32,351 +32,357 @@ class _HomePageState extends State<HomePage> {
 
     return Container(
       color: theme.scaffoldBackgroundColor,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Hero Banner ──────────────────────────────────────────────────
-            Stack(
-              children: [
-                Container(
-                  height: 220,
-                  width: Get.width,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage("assets/bg1.png"),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 220,
-                  width: Get.width,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.3),
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 30,
-                  left: 20,
-                  right: 20,
-                  child: Column(
-                    children: [
-                      Text(
-                        "We Need Your Powerful Hands To Change The World",
-                        textAlign: TextAlign.center,
-                        style: DesignSystem.h1.copyWith(color: Colors.white),
+      child: RefreshIndicator(
+        onRefresh: () async {
+          await controller.getAllCampaign();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Hero Banner ──────────────────────────────────────────────────
+              Stack(
+                children: [
+                  Container(
+                    height: 220,
+                    width: Get.width,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage("assets/bg1.png"),
+                        fit: BoxFit.cover,
                       ),
-                      const SizedBox(height: 16),
-                      CustomButton(
-                        text: "Donate Now",
-                        width: 180,
-                        icon: Icons.volunteer_activism,
-                        onTap: () => Get.to(CampaignList(
-                            title: "Donate to a Campaign",
-                            list: controller.campaignList)),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: DesignSystem.spacingL),
-
-            // ── Statistics Row ───────────────────────────────────────────────
-            Obx(() => Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: DesignSystem.spacingM),
-                  child: Row(
-                    children: [
-                      Expanded(
-                          child: StatsCard(
-                              label: "Donated",
-                              value: "Tk ${controller.totalDonated.value}+",
-                              icon: Icons.favorite)),
-                      const SizedBox(width: DesignSystem.spacingS),
-                      Expanded(
-                          child: StatsCard(
-                              label: "Received",
-                              value: "Tk ${controller.totalReceived.value}+",
-                              icon: Icons.account_balance_wallet)),
-                      const SizedBox(width: DesignSystem.spacingS),
-                      Expanded(
-                          child: StatsCard(
-                              label: "Campaigns",
-                              value: "${controller.totalCampaigns.value}+",
-                              icon: Icons.campaign)),
-                    ],
-                  ),
-                )),
-
-            const SizedBox(height: DesignSystem.spacingL),
-
-            // ── Campaign Categories (Icon Cards) ──────────────────────────────
-            Obx(() => controller.campaignCategoryList.isNotEmpty
-                ? SizedBox(
-                    height: 108,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: DesignSystem.spacingM),
-                      itemCount: controller.campaignCategoryList.length,
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        final cat = controller.campaignCategoryList[index];
-
-                        // ── Hide sub-categories (which are actually campaign titles in this DB) ──
-                        if (cat.parentId != null)
-                          return const SizedBox.shrink();
-
-                        // ── Hide mosque/graveyard categories ──
-                        final tLow = (cat.title ?? '').toLowerCase();
-                        final bool isHidden = tLow.contains('mosque') ||
-                            tLow.contains('masjid') ||
-                            tLow.contains('মসজিদ') ||
-                            tLow.contains('কবর') ||
-                            tLow.contains('kabor') ||
-                            tLow.contains('tube well') ||
-                            tLow.contains('নলকূপ') ||
-                            tLow.contains('শহীদ') ||
-                            tLow.contains('martyr');
-                        if (isHidden) return const SizedBox.shrink();
-
-                        final bool isSelected = index == selectedCategory;
-                        final _CategoryMeta meta =
-                            _CategoryMeta.from(cat.title ?? '');
-
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedCategory = index;
-                              if (cat.id == 0) {
-                                controller.getAllCampaign();
-                              } else {
-                                controller
-                                    .getCampaignByCategory(cat.id.toString());
-                              }
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            width: 76,
-                            margin: const EdgeInsets.only(right: 12),
-                            child: Column(
-                              children: [
-                                // ── Icon Container ──
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: isSelected
-                                          ? meta.gradientSelected
-                                          : meta.gradientUnselected,
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(18),
-                                    boxShadow: isSelected
-                                        ? [
-                                            BoxShadow(
-                                              color: meta.gradientSelected[0]
-                                                  .withOpacity(0.40),
-                                              blurRadius: 12,
-                                              offset: const Offset(0, 5),
-                                            )
-                                          ]
-                                        : [],
-                                  ),
-                                  child: Icon(
-                                    meta.icon,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : meta.gradientSelected[0],
-                                    size: 28,
-                                  ),
-                                ),
-                                const SizedBox(height: 7),
-                                // ── Label ──
-                                Text(
-                                  meta.label,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: isSelected
-                                        ? meta.gradientSelected[0]
-                                        : Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color,
-                                    height: 1.2,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
                     ),
-                  )
-                : const SizedBox.shrink()),
-
-            const SizedBox(height: DesignSystem.spacingL),
-
-            // ── Ongoing Campaigns ──────────────────────────────────────────────
-            SectionHeader(
-              title: "Current Campaigns",
-              onSeeAllTap: () => Get.to(CampaignList(
-                  title: "Current Campaigns",
-                  list: controller.ongoingCampaigns)),
-            ),
-            const SizedBox(height: 12),
-            Obx(() {
-              if (controller.isLoadingCampaign.value) {
-                return const SizedBox(
-                  height: 380,
-                  child: Center(
-                      child:
-                          CircularProgressIndicator(color: MyColors.primary)),
-                );
-              }
-              return SizedBox(
-                height: 415,
-                child: _CampaignTabContent(
-                  campaigns: controller.ongoingCampaigns,
-                  emptyMessage: 'No ongoing campaigns',
-                  emptyIcon: Icons.timelapse_outlined,
-                  accentColor: const Color(0xFFFFA62B),
-                ),
-              );
-            }),
-
-            const SizedBox(height: DesignSystem.spacingL),
-
-            // ── Successful Campaigns ─────────────────────────────────────────
-            // Shows campaigns that have reached 100% of their goal.
-            // These are filtered from the same campaignList, so when an
-            // ongoing campaign hits 100%, it automatically moves here.
-            SectionHeader(
-              title: "Ongoing Campaigns",
-              onSeeAllTap: () => Get.to(SuccessStories()),
-            ),
-
-            const SizedBox(height: 12),
-
-            Obx(() {
-              if (controller.isLoadingCampaign.value) {
-                return const SizedBox(
-                  height: 260,
-                  child: Center(
-                      child:
-                          CircularProgressIndicator(color: MyColors.primary)),
-                );
-              }
-              final successful = controller.successfulCampaigns;
-              if (successful.isEmpty) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Text("No successful campaigns yet",
-                        style: DesignSystem.caption),
                   ),
-                );
-              }
-              return SizedBox(
-                height: 415,
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: DesignSystem.spacingM),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: successful.length,
-                  itemBuilder: (context, index) {
-                    final campaign = successful[index];
-                    return Stack(
+                  Container(
+                    height: 220,
+                    width: Get.width,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.3),
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 30,
+                    left: 20,
+                    right: 20,
+                    child: Column(
                       children: [
-                        CampaignCard(
-                          campaign: campaign,
-                          onTap: () {
-                            controller.campaignDetail.value = campaign;
-                            Get.to(CampaignDetail());
-                          },
-                          onDonateTap: () =>
-                              controller.openUrlDonation(campaign),
+                        Text(
+                          "We Need Your Powerful Hands To Change The World",
+                          textAlign: TextAlign.center,
+                          style: DesignSystem.h1.copyWith(color: Colors.white),
+                        ),
+                        const SizedBox(height: 16),
+                        CustomButton(
+                          text: "Donate Now",
+                          width: 180,
+                          icon: Icons.volunteer_activism,
+                          onTap: () => Get.to(CampaignList(
+                              title: "Donate to a Campaign",
+                              list: controller.campaignList)),
                         ),
                       ],
-                    );
-                  },
-                ),
-              );
-            }),
+                    ),
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: DesignSystem.spacingL),
+              const SizedBox(height: DesignSystem.spacingL),
 
-            // ── Our Work / Success Stories ────────────────────────────────────
-            // Shows success stories from the admin panel (before/after photos).
-            SectionHeader(
-              title: "Our Works",
-              onSeeAllTap: () => Get.to(SuccessStories()),
-            ),
+              // ── Statistics Row ───────────────────────────────────────────────
+              Obx(() => Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: DesignSystem.spacingM),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: StatsCard(
+                                label: "Donated",
+                                value: "Tk ${controller.totalDonated.value}+",
+                                icon: Icons.favorite)),
+                        const SizedBox(width: DesignSystem.spacingS),
+                        Expanded(
+                            child: StatsCard(
+                                label: "Received",
+                                value: "Tk ${controller.totalReceived.value}+",
+                                icon: Icons.account_balance_wallet)),
+                        const SizedBox(width: DesignSystem.spacingS),
+                        Expanded(
+                            child: StatsCard(
+                                label: "Campaigns",
+                                value: "${controller.totalCampaigns.value}+",
+                                icon: Icons.campaign)),
+                      ],
+                    ),
+                  )),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: DesignSystem.spacingL),
 
-            Obx(() {
-              if (controller.isLoadingCampaign.value) {
-                return const SizedBox(
-                  height: 260,
-                  child: Center(
-                      child:
-                          CircularProgressIndicator(color: MyColors.primary)),
-                );
-              }
-              return controller.successStoryList.isNotEmpty
+              // ── Campaign Categories (Icon Cards) ──────────────────────────────
+              Obx(() => controller.campaignCategoryList.isNotEmpty
                   ? SizedBox(
-                      height: 280,
+                      height: 108,
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(
                             horizontal: DesignSystem.spacingM),
+                        itemCount: controller.campaignCategoryList.length,
                         scrollDirection: Axis.horizontal,
-                        itemCount: controller.successStoryList.length,
                         itemBuilder: (context, index) {
-                          final story = controller.successStoryList[index];
-                          return SuccessStoryCard(
-                            title: story.title.toString(),
-                            description: story.shortDescription.toString(),
-                            imageUrl: story.photo.toString(),
+                          final cat = controller.campaignCategoryList[index];
+
+                          // ── Hide sub-categories (which are actually campaign titles in this DB) ──
+                          if (cat.parentId != null)
+                            return const SizedBox.shrink();
+
+                          // ── Hide mosque/graveyard categories ──
+                          final tLow = (cat.title ?? '').toLowerCase();
+                          final bool isHidden = tLow.contains('mosque') ||
+                              tLow.contains('masjid') ||
+                              tLow.contains('মসজিদ') ||
+                              tLow.contains('কবর') ||
+                              tLow.contains('kabor') ||
+                              tLow.contains('tube well') ||
+                              tLow.contains('নলকূপ') ||
+                              tLow.contains('শহীদ') ||
+                              tLow.contains('martyr');
+                          if (isHidden) return const SizedBox.shrink();
+
+                          final bool isSelected = index == selectedCategory;
+                          final _CategoryMeta meta =
+                              _CategoryMeta.from(cat.title ?? '');
+
+                          return GestureDetector(
                             onTap: () {
-                              Get.find<HomeController>()
-                                  .getSuccessStoryDetail(story.id.toString());
-                              Get.to(SuccessStoryDetail());
+                              setState(() {
+                                selectedCategory = index;
+                                if (cat.id == 0) {
+                                  controller.getAllCampaign();
+                                } else {
+                                  controller
+                                      .getCampaignByCategory(cat.id.toString());
+                                }
+                              });
                             },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              width: 76,
+                              margin: const EdgeInsets.only(right: 12),
+                              child: Column(
+                                children: [
+                                  // ── Icon Container ──
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: isSelected
+                                            ? meta.gradientSelected
+                                            : meta.gradientUnselected,
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(18),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: meta.gradientSelected[0]
+                                                    .withOpacity(0.40),
+                                                blurRadius: 12,
+                                                offset: const Offset(0, 5),
+                                              )
+                                            ]
+                                          : [],
+                                    ),
+                                    child: Icon(
+                                      meta.icon,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : meta.gradientSelected[0],
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 7),
+                                  // ── Label ──
+                                  Text(
+                                    meta.label,
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10.5,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      color: isSelected
+                                          ? meta.gradientSelected[0]
+                                          : Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.color,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           );
                         },
                       ),
                     )
-                  : Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
-                        child:
-                            Text("No stories yet", style: DesignSystem.caption),
-                      ),
-                    );
-            }),
+                  : const SizedBox.shrink()),
 
-            const SizedBox(height: DesignSystem.spacingXL),
-          ],
+              const SizedBox(height: DesignSystem.spacingL),
+
+              // ── Ongoing Campaigns ──────────────────────────────────────────────
+              SectionHeader(
+                title: "Current Campaigns",
+                onSeeAllTap: () => Get.to(CampaignList(
+                    title: "Current Campaigns",
+                    list: controller.ongoingCampaigns)),
+              ),
+              const SizedBox(height: 12),
+              Obx(() {
+                if (controller.isLoadingCampaign.value) {
+                  return const SizedBox(
+                    height: 380,
+                    child: Center(
+                        child:
+                            CircularProgressIndicator(color: MyColors.primary)),
+                  );
+                }
+                return SizedBox(
+                  height: 415,
+                  child: _CampaignTabContent(
+                    campaigns: controller.ongoingCampaigns,
+                    emptyMessage: 'No ongoing campaigns',
+                    emptyIcon: Icons.timelapse_outlined,
+                    accentColor: const Color(0xFFFFA62B),
+                  ),
+                );
+              }),
+
+              const SizedBox(height: DesignSystem.spacingL),
+
+              // ── Successful Campaigns ─────────────────────────────────────────
+              // Shows campaigns that have reached 100% of their goal.
+              // These are filtered from the same campaignList, so when an
+              // ongoing campaign hits 100%, it automatically moves here.
+              SectionHeader(
+                title: "Ongoing Campaigns",
+                onSeeAllTap: () => Get.to(SuccessStories()),
+              ),
+
+              const SizedBox(height: 12),
+
+              Obx(() {
+                if (controller.isLoadingCampaign.value) {
+                  return const SizedBox(
+                    height: 260,
+                    child: Center(
+                        child:
+                            CircularProgressIndicator(color: MyColors.primary)),
+                  );
+                }
+                final successful = controller.successfulCampaigns;
+                if (successful.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Text("No successful campaigns yet",
+                          style: DesignSystem.caption),
+                    ),
+                  );
+                }
+                return SizedBox(
+                  height: 415,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: DesignSystem.spacingM),
+                    scrollDirection: Axis.horizontal,
+                    itemCount: successful.length,
+                    itemBuilder: (context, index) {
+                      final campaign = successful[index];
+                      return Stack(
+                        children: [
+                          CampaignCard(
+                            campaign: campaign,
+                            onTap: () {
+                              controller.campaignDetail.value = campaign;
+                              Get.to(CampaignDetail());
+                            },
+                            onDonateTap: () =>
+                                controller.openUrlDonation(campaign),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              }),
+
+              const SizedBox(height: DesignSystem.spacingL),
+
+              // ── Our Work / Success Stories ────────────────────────────────────
+              // Shows success stories from the admin panel (before/after photos).
+              SectionHeader(
+                title: "Our Works",
+                onSeeAllTap: () => Get.to(SuccessStories()),
+              ),
+
+              const SizedBox(height: 12),
+
+              Obx(() {
+                if (controller.isLoadingCampaign.value) {
+                  return const SizedBox(
+                    height: 260,
+                    child: Center(
+                        child:
+                            CircularProgressIndicator(color: MyColors.primary)),
+                  );
+                }
+                return controller.successStoryList.isNotEmpty
+                    ? SizedBox(
+                        height: 280,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: DesignSystem.spacingM),
+                          scrollDirection: Axis.horizontal,
+                          itemCount: controller.successStoryList.length,
+                          itemBuilder: (context, index) {
+                            final story = controller.successStoryList[index];
+                            return SuccessStoryCard(
+                              title: story.title.toString(),
+                              description: story.shortDescription.toString(),
+                              imageUrl: story.photo.toString(),
+                              onTap: () {
+                                Get.find<HomeController>()
+                                    .getSuccessStoryDetail(story.id.toString());
+                                Get.to(SuccessStoryDetail());
+                              },
+                            );
+                          },
+                        ),
+                      )
+                    : Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: Text("No stories yet",
+                              style: DesignSystem.caption),
+                        ),
+                      );
+              }),
+
+              const SizedBox(height: DesignSystem.spacingXL),
+            ],
+          ),
         ),
       ),
     );

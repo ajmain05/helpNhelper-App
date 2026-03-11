@@ -47,22 +47,24 @@ class HomeController extends GetxController {
   // Computed campaign categories (client-side, based on totalRaised vs amount)
   // ────────────────────────────────────────────────────────────────────────────
   List<CampaignModel> get currentCampaigns => campaignList.where((c) {
-        final raised = double.tryParse(c.totalRaised?.toString() ?? '0') ?? 0;
+        final raised = double.tryParse(
+                c.totalDonation ?? c.totalRaised?.toString() ?? '0') ??
+            0;
         return raised == 0;
       }).toList();
 
   List<CampaignModel> get ongoingCampaigns => campaignList.where((c) {
-        // Mirror the logic in campaign_card.dart: prefer totalDonation, fall back to totalRaised
-        final raised =
-            double.tryParse(c.totalDonation ?? c.totalRaised ?? '0') ?? 0;
+        final raised = double.tryParse(
+                c.totalDonation ?? c.totalRaised?.toString() ?? '0') ??
+            0;
         final goal = double.tryParse(c.amount?.toString() ?? '0') ?? 0;
         return goal == 0 || raised < goal;
       }).toList();
 
   List<CampaignModel> get successfulCampaigns => campaignList.where((c) {
-        // Mirror the logic in campaign_card.dart: prefer totalDonation, fall back to totalRaised
-        final raised =
-            double.tryParse(c.totalDonation ?? c.totalRaised ?? '0') ?? 0;
+        final raised = double.tryParse(
+                c.totalDonation ?? c.totalRaised?.toString() ?? '0') ??
+            0;
         final goal = double.tryParse(c.amount?.toString() ?? '0') ?? 1;
         return goal > 0 && raised >= goal;
       }).toList();
