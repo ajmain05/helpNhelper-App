@@ -29,11 +29,19 @@ class _SignUpPage2State extends State<SignUpPage2> {
   }
 
   PickedFile? _pickedFile;
+  PickedFile? _pickedLicenseFile;
   final _picker = ImagePicker();
   Future<void> _pickImage() async {
     _pickedFile = await _picker.getImage(source: ImageSource.gallery);
     if (_pickedFile != null) {
       controller.nidImage.add(_pickedFile!);
+    }
+  }
+
+  Future<void> _pickCertImage() async {
+    _pickedLicenseFile = await _picker.getImage(source: ImageSource.gallery);
+    if (_pickedLicenseFile != null) {
+      controller.certImage.add(_pickedLicenseFile!);
     }
   }
 
@@ -375,30 +383,221 @@ class _SignUpPage2State extends State<SignUpPage2> {
 
                       const SizedBox(height: 24),
 
-                      // Address Section
-                      _sectionHeader(
-                          "address_details".tr, Icons.home_outlined, textColor),
-                      const SizedBox(height: 12),
-
-                      Obx(() => Column(
+                      // ── Organization: Registered / Unregistered branching ──
+                      Obx(() => controller.type.value == 'organization'
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                const SizedBox(height: 8),
+                                _sectionHeader("Organization Type",
+                                    Icons.business_rounded, textColor),
+                                const SizedBox(height: 12),
+
+                                // Toggle: Registered / Unregistered
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: fieldBg,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: borderColor),
+                                  ),
+                                  child: Row(
+                                    children: ['registered', 'unregistered'].map((val) {
+                                      final selected = controller.orgRegType.value == val;
+                                      return Expanded(
+                                        child: GestureDetector(
+                                          onTap: () => controller.orgRegType.value = val,
+                                          child: AnimatedContainer(
+                                            duration: const Duration(milliseconds: 200),
+                                            margin: const EdgeInsets.all(4),
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                            decoration: BoxDecoration(
+                                              color: selected ? MyColors.primary : Colors.transparent,
+                                              borderRadius: BorderRadius.circular(9),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                val == 'registered' ? 'Registered' : 'Unregistered',
+                                                style: GoogleFonts.poppins(
+                                                  color: selected ? Colors.white : textColor.withOpacity(0.6),
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // ── Registered branch ──
+                                if (controller.orgRegType.value == 'registered') ...[
+                                  _sectionHeader("Registration Details",
+                                      Icons.verified_rounded, textColor),
+                                  const SizedBox(height: 12),
+
+                                  // Registration Body dropdown
+                                  _buildDropdownField(
+                                    "Registration Body",
+                                    controller.regBody,
+                                    [
+                                      'Joint Stock Companies & Firms (RJSC)',
+                                      'Samaj Seba Adhidaptor (DSS)',
+                                      'Jubo Unnayan Odhidoptor',
+                                      'NGO Affairs Bureau',
+                                      'Directorate of Women Affairs',
+                                      'Department of Cooperatives',
+                                      'Ministry of Social Welfare',
+                                      'Other',
+                                    ],
+                                    textColor, hintColor, fieldBg, borderColor,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // Free-text if 'Other' selected
+                                  if (controller.regBody.value == 'Other')
+                                    Column(children: [
+                                      _buildFormField(
+                                        "Specify Registration Body",
+                                        controller.regBodyOtherController,
+                                        textColor, hintColor, fieldBg, borderColor,
+                                      ),
+                                      const SizedBox(height: 14),
+                                    ]),
+
+                                  // Registration Number
+                                  _buildFormField(
+                                    "Registration Number",
+                                    controller.regNoController,
+                                    textColor, hintColor, fieldBg, borderColor,
+                                  ),
+                                  const SizedBox(height: 14),
+
+                                  // Certificate Upload (mandatory)
+                                  Text("Registration Certificate *",
+                                      style: GoogleFonts.poppins(
+                                          color: textColor.withOpacity(0.7),
+                                          fontSize: 12, fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 8),
+                                  controller.certImage.isEmpty
+                                      ? GestureDetector(
+                                          onTap: _pickCertImage,
+                                          child: _uploadBox(
+                                              "Upload Certificate", Icons.insert_drive_file_outlined,
+                                              fieldBg, borderColor),
+                                        )
+                                      : _imagePreviewList(
+                                          controller.certImage,
+                                          () => setState(() => controller.certImage.clear()),
+                                        ),
+                                  const SizedBox(height: 20),
+                                ],
+
+                                // ── Unregistered branch ──
+                                if (controller.orgRegType.value == 'unregistered') ...[
+                                  _sectionHeader("Organization Background",
+                                      Icons.info_outline_rounded, textColor),
+                                  const SizedBox(height: 12),
+
+                                  _buildFormField(
+                                    "Years of Operation (min. 1 year)",
+                                    controller.yearsOfOpController,
+                                    textColor, hintColor, fieldBg, borderColor,
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                  const SizedBox(height: 14),
+                                  _buildFormField(
+                                    "Number of People Benefited",
+                                    controller.beneficiariesCountController,
+                                    textColor, hintColor, fieldBg, borderColor,
+                                    keyboardType: TextInputType.number,
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Working Sectors multi-select
+                                  Text("Working Sectors",
+                                      style: GoogleFonts.poppins(
+                                          color: textColor.withOpacity(0.7),
+                                          fontSize: 12, fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      'Education', 'Health', 'Food',
+                                      'Shelter', 'Livelihood', 'Disaster Relief', 'Others'
+                                    ].map((sector) {
+                                      final selected = controller.workingSectors.contains(sector);
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            if (selected) {
+                                              controller.workingSectors.remove(sector);
+                                            } else {
+                                              controller.workingSectors.add(sector);
+                                            }
+                                          });
+                                        },
+                                        child: AnimatedContainer(
+                                          duration: const Duration(milliseconds: 180),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: selected
+                                                ? MyColors.primary
+                                                : fieldBg,
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(
+                                              color: selected
+                                                  ? MyColors.primary
+                                                  : borderColor,
+                                            ),
+                                          ),
+                                          child: Text(sector,
+                                              style: GoogleFonts.poppins(
+                                                color: selected ? Colors.white : textColor,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+
+                                // Office Address (both registered & unregistered)
+                                _sectionHeader(
+                                    "address_details".tr, Icons.home_outlined, textColor),
+                                const SizedBox(height: 12),
                                 _buildFormField(
-                                    "present_address".tr,
-                                    controller.presentAddressController,
-                                    textColor,
-                                    hintColor,
-                                    fieldBg,
-                                    borderColor),
-                                const SizedBox(height: 14),
-                                _buildFormField(
-                                    "permanent_address".tr,
-                                    controller.permanentAddressController,
-                                    textColor,
-                                    hintColor,
-                                    fieldBg,
-                                    borderColor),
+                                  "Office Address",
+                                  controller.officeAddressController,
+                                  textColor, hintColor, fieldBg, borderColor,
+                                ),
+                                const SizedBox(height: 8),
                               ],
-                            )),
+                            )
+                          : const SizedBox.shrink()),
+
+                      // Address Section (seeker / volunteer only)
+                      if (controller.type.value != 'organization') ...[
+                        _sectionHeader(
+                            "address_details".tr, Icons.home_outlined, textColor),
+                        const SizedBox(height: 12),
+                        _buildFormField(
+                            "present_address".tr,
+                            controller.presentAddressController,
+                            textColor, hintColor, fieldBg, borderColor),
+                        const SizedBox(height: 14),
+                        _buildFormField(
+                            "permanent_address".tr,
+                            controller.permanentAddressController,
+                            textColor, hintColor, fieldBg, borderColor),
+                        const SizedBox(height: 24),
+                      ],
 
                       const SizedBox(height: 28),
 
@@ -415,16 +614,44 @@ class _SignUpPage2State extends State<SignUpPage2> {
                                 borderRadius: BorderRadius.circular(14)),
                           ),
                           onPressed: () {
-                            if (controller.nidImage.isEmpty) {
-                              Get.snackbar(
-                                "NID Required",
-                                "Please upload your NID/Passport document",
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.redAccent,
-                                colorText: Colors.white,
-                                margin: const EdgeInsets.all(16),
-                                borderRadius: 12,
-                              );
+                            final isOrg = controller.type.value == 'organization';
+                            final isRegistered = controller.orgRegType.value == 'registered';
+
+                            if (!isOrg && controller.nidImage.isEmpty) {
+                              Get.snackbar("NID Required",
+                                  "Please upload your NID/Passport document",
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: Colors.redAccent,
+                                  colorText: Colors.white,
+                                  margin: const EdgeInsets.all(16),
+                                  borderRadius: 12);
+                            } else if (isOrg && isRegistered &&
+                                controller.regBody.value.isEmpty) {
+                              Get.snackbar("Registration Body Required",
+                                  "Please select your registration authority",
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: Colors.redAccent,
+                                  colorText: Colors.white,
+                                  margin: const EdgeInsets.all(16),
+                                  borderRadius: 12);
+                            } else if (isOrg && isRegistered &&
+                                controller.certImage.isEmpty) {
+                              Get.snackbar("Certificate Required",
+                                  "Please upload your registration certificate",
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: Colors.redAccent,
+                                  colorText: Colors.white,
+                                  margin: const EdgeInsets.all(16),
+                                  borderRadius: 12);
+                            } else if (isOrg && !isRegistered &&
+                                controller.workingSectors.isEmpty) {
+                              Get.snackbar("Sectors Required",
+                                  "Please select at least one working sector",
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: Colors.redAccent,
+                                  colorText: Colors.white,
+                                  margin: const EdgeInsets.all(16),
+                                  borderRadius: 12);
                             } else if (_formKey.currentState!.validate()) {
                               Get.to(SignUpPage3());
                             }
@@ -628,12 +855,15 @@ class _SignUpPage2State extends State<SignUpPage2> {
     Color textColor,
     Color hintColor,
     Color fieldBg,
-    Color borderColor,
-  ) {
+    Color borderColor, {
+    TextInputType keyboardType = TextInputType.multiline,
+  }) {
+    final isSingleLine = keyboardType == TextInputType.number ||
+        keyboardType == TextInputType.phone;
     return TextFormField(
       controller: ctrl,
-      keyboardType: TextInputType.multiline,
-      maxLines: 2,
+      keyboardType: keyboardType,
+      maxLines: isSingleLine ? 1 : 2,
       minLines: 1,
       cursorColor: MyColors.primary,
       style: GoogleFonts.poppins(color: textColor, fontSize: 14),
@@ -662,6 +892,118 @@ class _SignUpPage2State extends State<SignUpPage2> {
             const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
       validator: (v) => v == null || v.isEmpty ? "Please enter $title" : null,
+    );
+  }
+
+  Widget _buildDropdownField(
+    String hint,
+    RxString rxValue,
+    List<String> items,
+    Color textColor,
+    Color hintColor,
+    Color fieldBg,
+    Color borderColor,
+  ) {
+    return Obx(() => DropdownButtonFormField<String>(
+          value: rxValue.value.isEmpty ? null : rxValue.value,
+          isExpanded: true,
+          dropdownColor: fieldBg,
+          style: GoogleFonts.poppins(color: textColor, fontSize: 14),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: fieldBg,
+            hintText: hint,
+            hintStyle: GoogleFonts.poppins(color: hintColor, fontSize: 14),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: MyColors.primary, width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          ),
+          items: items.map((item) => DropdownMenuItem(
+                value: item,
+                child: Text(item,
+                    style: GoogleFonts.poppins(color: textColor, fontSize: 13)),
+              )).toList(),
+          onChanged: (val) => rxValue.value = val ?? '',
+        ));
+  }
+
+  Widget _uploadBox(String label, IconData icon, Color fieldBg, Color borderColor) {
+    return Container(
+      height: 100,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: fieldBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: MyColors.primary.withOpacity(0.4), width: 1.5),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: MyColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: MyColors.primary, size: 24),
+          ),
+          const SizedBox(height: 8),
+          Text(label,
+              style: GoogleFonts.poppins(
+                  color: MyColors.primary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
+  }
+
+  Widget _imagePreviewList(RxList<PickedFile> images, VoidCallback onRemove) {
+    return SizedBox(
+      height: 110,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: images.length,
+        itemBuilder: (ctx, idx) => Stack(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(right: 10),
+              height: 100,
+              width: 180,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: FileImage(File(images[idx].path)),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 6,
+              right: 16,
+              child: GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                      color: Colors.red, shape: BoxShape.circle),
+                  child: const Icon(Icons.close, color: Colors.white, size: 14),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

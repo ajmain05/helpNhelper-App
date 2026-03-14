@@ -29,3 +29,6 @@ final getStatsApi = "${baseUrl}stats";
 final getFaqApi = "${baseUrl}faq";
 final updateProfileApi =
     "${baseUrl}update-profile"; // POST update name/mobile/photo
+final orgApplicationsApi = "${baseUrl}organization/applications"; // GET
+final orgSubmitApplicationApi = "${baseUrl}organization/application"; // POST
+final settingsApi = "${baseUrl}settings"; // GET

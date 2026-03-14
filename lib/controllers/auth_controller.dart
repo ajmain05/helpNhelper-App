@@ -37,6 +37,21 @@ class AuthController extends GetxController {
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController otpController = TextEditingController();
+  // Organization-specific
+  RxString orgRegType = 'registered'.obs; // 'registered' | 'unregistered'
+  TextEditingController officeAddressController = TextEditingController();
+  // Registered org
+  RxString regBody = ''.obs; // dropdown selection
+  TextEditingController regBodyOtherController = TextEditingController(); // free-text when 'Other'
+  TextEditingController regNoController = TextEditingController();
+  RxList<PickedFile> certImage = <PickedFile>[].obs; // certificate image
+  // For backward compat (trade license — kept but optional)
+  TextEditingController licenseNoController = TextEditingController();
+  RxList<PickedFile> licenseImage = <PickedFile>[].obs;
+  // Unregistered org
+  TextEditingController yearsOfOpController = TextEditingController();
+  TextEditingController beneficiariesCountController = TextEditingController();
+  RxList<String> workingSectors = <String>[].obs; // e.g. ['Education','Health']
 
   bool passLogin = false;
   bool phoneLogin = false;

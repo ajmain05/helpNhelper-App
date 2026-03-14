@@ -8,21 +8,22 @@ import 'package:helpnhelper/controllers/theme_controller.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:helpnhelper/controllers/auth_controller.dart';
 import 'package:helpnhelper/controllers/home_controller.dart';
-
+import 'package:helpnhelper/pages/organization/org_application_form.dart';
+import 'package:helpnhelper/utils/my_colors.dart';
 import 'package:helpnhelper/core/dashboard.dart';
+import 'package:helpnhelper/pages/login/landing_page.dart';
 import 'package:helpnhelper/pages/history/donor_history.dart';
 import 'package:helpnhelper/pages/history/seeker_history.dart';
 import 'package:helpnhelper/pages/history/volunteer_history.dart';
-import 'package:helpnhelper/pages/login/landing_page.dart';
 import 'package:helpnhelper/pages/profile/wallet_dashboard.dart';
 import 'package:helpnhelper/pages/seeker/request_for_fund.dart';
 import 'package:helpnhelper/pages/volunteer/transaction_list.dart';
 import 'package:helpnhelper/pages/volunteer/transaction_method_list.dart';
 
 import '../pages/aboutUs/about_us_page.dart';
-import '../pages/home/faq.dart';
-import '../pages/home/contact_page.dart';
-import '../utils/my_colors.dart';
+import 'package:helpnhelper/pages/home/faq.dart';
+import 'package:helpnhelper/pages/home/contact_page.dart';
+
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({Key? key}) : super(key: key);
@@ -131,27 +132,27 @@ class MyDrawer extends StatelessWidget {
                   if (isLoggedIn) ...[
                     const SizedBox(height: 16),
                     _menuSectionTitle('personal'.tr, isDark),
-                    _buildNavItem(
-                      icon: Icons.history_edu_rounded,
-                      label: 'history'.tr,
-                      color: const Color(0xFF6366F1), // Indigo
-                      onTap: () {
-                        if (userType == "seeker") {
-                          Get.to(() => SeekerHistory());
-                        } else if (userType == "corporate-donor") {
-                          Get.to(() => const WalletDashboard());
-                        } else if (userType == "donor" ||
-                            userType == "organization") {
-                          Get.to(() => DonorHistory());
-                        } else if (userType == "volunteer") {
-                          Get.to(() => VolunteerHistory());
-                        } else {
-                          Get.to(() => DonorHistory());
-                        }
-                      },
-                      textColor: textColor,
-                      isDark: isDark,
-                    ),
+                    if (userType != "organization")
+                      _buildNavItem(
+                        icon: Icons.history_edu_rounded,
+                        label: 'history'.tr,
+                        color: const Color(0xFF6366F1), // Indigo
+                        onTap: () {
+                          if (userType == "seeker") {
+                            Get.to(() => SeekerHistory());
+                          } else if (userType == "corporate-donor") {
+                            Get.to(() => const WalletDashboard());
+                          } else if (userType == "donor") {
+                            Get.to(() => DonorHistory());
+                          } else if (userType == "volunteer") {
+                            Get.to(() => VolunteerHistory());
+                          } else {
+                            Get.to(() => DonorHistory());
+                          }
+                        },
+                        textColor: textColor,
+                        isDark: isDark,
+                      ),
                     if (userType == "seeker")
                       _buildNavItem(
                         icon: Icons.request_quote_rounded,
@@ -161,6 +162,18 @@ class MyDrawer extends StatelessWidget {
                         textColor: textColor,
                         isDark: isDark,
                       ),
+                    if (userType == "organization") ...[
+                      _buildNavItem(
+                        icon: Icons.post_add_rounded,
+                        label: 'Submit Request',
+                        color: const Color(0xFF8B5CF6), // Purple
+                        onTap: () {
+                           Get.to(() => const OrgApplicationForm());
+                        },
+                        textColor: textColor,
+                        isDark: isDark,
+                      ),
+                    ],
                     if (userType == "volunteer") ...[
                       _buildNavItem(
                         icon: Icons.account_balance_wallet_rounded,

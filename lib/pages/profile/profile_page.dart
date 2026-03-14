@@ -11,6 +11,8 @@ import 'package:helpnhelper/pages/login/sign_up_page_1.dart';
 import 'package:helpnhelper/utils/my_colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:helpnhelper/pages/profile/wallet_dashboard.dart';
+import 'package:helpnhelper/pages/organization/org_dashboard.dart';
+import 'package:helpnhelper/pages/organization/org_application_form.dart';
 
 class ProfilePage extends StatefulWidget {
   final bool showBackButton;
@@ -397,6 +399,75 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                     ),
+                  ),
+                ),
+              ),
+
+            // ── Org Dashboard CTA ─────────────────────────────────────────────
+            if (userType == 'organization')
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () => Get.to(() => const OrgDashboard()),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF6C63FF), Color(0xFF9C27B0)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [BoxShadow(color: const Color(0xFF6C63FF).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                                  child: const Icon(Icons.dashboard_rounded, color: Colors.white, size: 20),
+                                ),
+                                const SizedBox(width: 12),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('My Dashboard', style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                                    Text('View applications', style: GoogleFonts.poppins(color: Colors.white70, fontSize: 11)),
+                                  ],
+                                ),
+                                const Spacer(),
+                                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      InkWell(
+                        onTap: () => Get.to(() => const OrgApplicationForm()),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [BoxShadow(color: const Color(0xFF10B981).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(Icons.add_circle_rounded, color: Colors.white, size: 24),
+                              const SizedBox(height: 4),
+                              Text('New Request', style: GoogleFonts.poppins(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

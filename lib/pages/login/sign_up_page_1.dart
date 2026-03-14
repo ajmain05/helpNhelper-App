@@ -344,10 +344,11 @@ class _SignUpPage1State extends State<SignUpPage1>
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          if (controller.type.value != 'seeker' &&
-                              controller.type.value != 'volunteer') {
+                          if (controller.type.value == 'donor' ||
+                              controller.type.value == 'corporate-donor') {
                             Get.to(SignUpPage3());
                           } else {
+                            // seeker, volunteer, organization → go to Step 2
                             Get.to(SignUpPage2());
                           }
                         }

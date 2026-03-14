@@ -124,6 +124,25 @@ class AuthService {
       request.fields['present_address'] =
           Get.find<AuthController>().presentAddressController.text;
     }
+    if (Get.find<AuthController>().type.value == 'organization') {
+      final ctrl = Get.find<AuthController>();
+      request.fields['upazila'] = ctrl.upazilaId.value;
+      request.fields['office_address'] = ctrl.officeAddressController.text;
+      request.fields['org_reg_type'] = ctrl.orgRegType.value;
+
+      if (ctrl.orgRegType.value == 'registered') {
+        final bodyVal = ctrl.regBody.value == 'Other'
+            ? ctrl.regBodyOtherController.text
+            : ctrl.regBody.value;
+        request.fields['reg_body'] = bodyVal;
+        request.fields['reg_no'] = ctrl.regNoController.text;
+      } else {
+        request.fields['years_of_op'] = ctrl.yearsOfOpController.text;
+        request.fields['beneficiaries_count'] =
+            ctrl.beneficiariesCountController.text;
+        request.fields['working_sectors'] = ctrl.workingSectors.join(',');
+      }
+    }
     request.fields['terms'] = "1";
 
     if (Get.find<AuthController>().type.value == 'seeker' ||
@@ -132,6 +151,20 @@ class AuthService {
           "auth_file", Get.find<AuthController>().nidImage[0].path));
       request.files.add(await http.MultipartFile.fromPath(
           "photo", Get.find<AuthController>().profileImage[0].path));
+    }
+    if (Get.find<AuthController>().type.value == 'organization') {
+      final ctrl = Get.find<AuthController>();
+      // Certificate image (for registered orgs) sent as auth_file
+      if (ctrl.certImage.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath(
+            "auth_file", ctrl.certImage[0].path));
+        request.files.add(await http.MultipartFile.fromPath(
+            "cert_image", ctrl.certImage[0].path));
+      }
+      if (ctrl.profileImage.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath(
+            "photo", ctrl.profileImage[0].path));
+      }
     }
 
     final response = await request.send();

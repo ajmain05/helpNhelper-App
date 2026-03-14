@@ -65,7 +65,8 @@ class _SignUpPage3State extends State<SignUpPage3> {
     final borderColor = isDark ? const Color(0xFF2D3147) : Colors.grey.shade200;
     final authCtrl = Get.find<AuthController>();
     final isVolunteerOrSeeker = authCtrl.type.value == 'seeker' ||
-        authCtrl.type.value == 'volunteer';
+        authCtrl.type.value == 'volunteer' ||
+        authCtrl.type.value == 'organization';
 
     return Obx(() => Visibility(
           visible: !authCtrl.isLoading.value,
