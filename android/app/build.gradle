@@ -30,7 +30,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.codersLab.helpnhelper"
-    compileSdkVersion 36
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -52,9 +52,15 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 36
-        versionCode flutterVersionCode.toInteger()
+        targetSdkVersion 35
+        versionCode 46
         versionName flutterVersionName
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 
     signingConfigs {
