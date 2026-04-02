@@ -4,6 +4,7 @@ import 'package:helpnhelper/models/campaign_model.dart';
 import 'package:helpnhelper/models/seeker_history_model.dart';
 import 'package:helpnhelper/models/successStoryModel.dart';
 import 'package:helpnhelper/models/volunteer_historyModel.dart';
+import 'package:helpnhelper/models/volunteer_leaderboard_model.dart';
 import 'package:helpnhelper/models/donation_history_model.dart';
 import 'package:helpnhelper/pages/donation/donation_page.dart';
 import 'package:helpnhelper/pages/home/in_app_web_page.dart';
@@ -24,6 +25,8 @@ class HomeController extends GetxController {
   List<SeekerHistoryModel> seekerHistoryList = <SeekerHistoryModel>[].obs;
   List<VolunteerHistoryModel> volunteerHistoryList =
       <VolunteerHistoryModel>[].obs;
+  List<VolunteerLeaderboardModel> volunteerLeaderboardList =
+      <VolunteerLeaderboardModel>[].obs;
   List<CampaignModel> featuredCampaignList = <CampaignModel>[].obs;
   List<CampaignModel> selectedCampaignList = <CampaignModel>[].obs;
   List<SuccessStoryModel> successStoryList = <SuccessStoryModel>[].obs;
@@ -92,6 +95,7 @@ class HomeController extends GetxController {
     getAllCampaign();
     getSuccessStory();
     getStats();
+    getVolunteerLeaderboard();
   }
 
   getCampaignCategory() {
@@ -156,6 +160,11 @@ class HomeController extends GetxController {
   getVolunteerHistory() {
     volunteerHistoryList.clear();
     service.getVolunteerHistory();
+  }
+
+  getVolunteerLeaderboard() {
+    volunteerLeaderboardList.clear();
+    service.getVolunteerLeaderboard();
   }
 
   // ────────────────────────────────────────────────────────────────────────────

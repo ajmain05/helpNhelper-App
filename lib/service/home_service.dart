@@ -6,6 +6,7 @@ import 'package:helpnhelper/models/seeker_history_model.dart';
 import 'package:helpnhelper/models/successStoryModel.dart';
 import 'package:helpnhelper/models/volunteer_historyModel.dart';
 import 'package:helpnhelper/models/donation_history_model.dart';
+import 'package:helpnhelper/models/volunteer_leaderboard_model.dart';
 import 'package:helpnhelper/utils/api_url.dart';
 
 import 'dart:convert';
@@ -237,6 +238,23 @@ class HomeService {
       print('Donation history fetch error: $e');
     } finally {
       Get.find<HomeController>().isLoadingDonationHistory.value = false;
+    }
+  }
+
+  Future<void> getVolunteerLeaderboard() async {
+    var url = Uri.parse(getVolunteerLeaderboardApi);
+    var response = await http.get(url, headers: {"Accept": "application/json"});
+    try {
+      if (response.statusCode == 200) {
+        var jsonData = json.decode(response.body);
+        final ctrl = Get.find<HomeController>();
+        ctrl.volunteerLeaderboardList.clear();
+        for (var data in jsonData['data']) {
+          ctrl.volunteerLeaderboardList.add(VolunteerLeaderboardModel.fromJson(data));
+        }
+      }
+    } catch (e) {
+      print('Volunteer leaderboard fetch error: $e');
     }
   }
 

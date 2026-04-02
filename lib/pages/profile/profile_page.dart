@@ -5,9 +5,14 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:helpnhelper/controllers/auth_controller.dart';
 import 'package:helpnhelper/controllers/home_controller.dart';
+import 'package:helpnhelper/controllers/volunteer_controller.dart';
+import 'package:helpnhelper/models/transaction_method_model.dart';
 import 'package:helpnhelper/models/user_model.dart';
+import 'package:helpnhelper/models/volunteer_points_model.dart';
 import 'package:helpnhelper/pages/login/sign_in_page.dart';
 import 'package:helpnhelper/pages/login/sign_up_page_1.dart';
+import 'package:helpnhelper/pages/volunteer/transaction_method_list.dart';
+import 'package:helpnhelper/utils/api_url.dart';
 import 'package:helpnhelper/utils/my_colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:helpnhelper/pages/profile/wallet_dashboard.dart';
@@ -40,6 +45,8 @@ class _ProfilePageState extends State<ProfilePage> {
         if (userType == 'volunteer') {
           if (homeCtrl.volunteerHistoryList.isEmpty)
             homeCtrl.getVolunteerHistory();
+          // Always refresh bank list to stay in sync with website
+          Get.find<VolunteerController>().getBankList();
         } else if (userType == 'seeker') {
           if (homeCtrl.seekerHistoryList.isEmpty) homeCtrl.getSeekerHistory();
         }
@@ -228,27 +235,36 @@ class _ProfilePageState extends State<ProfilePage> {
                                       blurRadius: 16)
                                 ],
                               ),
-                              child: CircleAvatar(
-                                radius: 48,
-                                backgroundColor: Colors.white.withOpacity(0.2),
-                                backgroundImage: (u.photo != null &&
-                                        u.photo!.isNotEmpty &&
-                                        u.photo!.startsWith('http'))
-                                    ? NetworkImage(u.photo!)
-                                    : null,
-                                child: (u.photo == null ||
-                                        u.photo!.isEmpty ||
-                                        !u.photo!.startsWith('http'))
-                                    ? Text(
-                                        (u.name?.isNotEmpty == true)
-                                            ? u.name![0].toUpperCase()
-                                            : '?',
-                                        style: GoogleFonts.playfairDisplay(
-                                            color: Colors.white,
-                                            fontSize: 36,
-                                            fontWeight: FontWeight.w700))
-                                    : null,
-                              ),
+                              child: Builder(builder: (context) {
+                                // Build full photo URL (handle relative paths)
+                                String? photoUrl;
+                                if (u.photo != null && u.photo!.isNotEmpty) {
+                                  if (u.photo!.startsWith('http')) {
+                                    photoUrl = u.photo;
+                                  } else {
+                                    // relative path - prepend base domain
+                                    final base = baseUrlProd.replaceAll('/api/v1/', '');
+                                    photoUrl = '$base/${u.photo!.replaceAll(RegExp(r'^/+'), '')}';
+                                  }
+                                }
+                                return CircleAvatar(
+                                  radius: 48,
+                                  backgroundColor: Colors.white.withOpacity(0.2),
+                                  backgroundImage: photoUrl != null
+                                      ? NetworkImage(photoUrl)
+                                      : null,
+                                  child: photoUrl == null
+                                      ? Text(
+                                          (u.name?.isNotEmpty == true)
+                                              ? u.name![0].toUpperCase()
+                                              : '?',
+                                          style: GoogleFonts.playfairDisplay(
+                                              color: Colors.white,
+                                              fontSize: 36,
+                                              fontWeight: FontWeight.w700))
+                                      : null,
+                                );
+                              }),
                             ),
                             // Camera badge
                             Container(
@@ -555,6 +571,20 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
                   ],
                   if (userType == 'volunteer') ...[
+                    _sectionTitle('Achievements'.tr, textColor),
+                    Obx(() {
+                      final vCtrl = Get.find<VolunteerController>();
+                      final pointsData = vCtrl.myPointsData.value;
+                      return Column(
+                        children: [
+                          _pointsCard(pointsData.totalPoints ?? 0, cardBg, textColor, accent),
+                          const SizedBox(height: 16),
+                          if (pointsData.rewards != null && pointsData.rewards!.isNotEmpty)
+                            ...pointsData.rewards!.map((r) => _rewardCard(r, cardBg, textColor, subColor, accent)).toList(),
+                          const SizedBox(height: 20),
+                        ],
+                      );
+                    }),
                     _sectionTitle('task_history'.tr, textColor),
                     Obx(() {
                       final ctrl = Get.find<HomeController>();
@@ -572,6 +602,133 @@ class _ProfilePageState extends State<ProfilePage> {
                               subColor,
                               accent);
                         }).toList(),
+                      );
+                    }),
+                    const SizedBox(height: 20),
+                    // ── Bank / MFS Information ──────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _sectionTitle('Bank / MFS Information', textColor),
+                        GestureDetector(
+                          onTap: () => Get.to(() => TransactionMethodList()),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: accent.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.manage_accounts_rounded,
+                                    size: 14, color: accent),
+                                const SizedBox(width: 4),
+                                Text('Manage',
+                                    style: GoogleFonts.poppins(
+                                        color: accent,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Obx(() {
+                      final vCtrl = Get.find<VolunteerController>();
+                      final methods = vCtrl.transactionMethodList;
+                      if (vCtrl.isLoading.value && methods.isEmpty) {
+                        return Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(16)),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                                color: MyColors.primary),
+                          ),
+                        );
+                      }
+                      if (methods.isEmpty) {
+                        return GestureDetector(
+                          onTap: () => Get.to(() => TransactionMethodList()),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 24),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                  color: accent.withOpacity(0.3),
+                                  style: BorderStyle.solid),
+                              boxShadow: [
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 3))
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: accent.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                      Icons.account_balance_wallet_outlined,
+                                      color: accent,
+                                      size: 28),
+                                ),
+                                const SizedBox(height: 12),
+                                Text('No payment methods yet',
+                                    style: GoogleFonts.poppins(
+                                        color: textColor,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                Text(
+                                    'Add your bKash, Nagad or bank account\nto receive payments',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                        color: subColor, fontSize: 11)),
+                                const SizedBox(height: 14),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [accent, accent.withOpacity(0.7)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.add_rounded,
+                                          color: Colors.white, size: 16),
+                                      const SizedBox(width: 6),
+                                      Text('Add Method',
+                                          style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      return Column(
+                        children: methods
+                            .map((m) => _bankMfsCard(
+                                m, cardBg, textColor, subColor, fieldBg, accent))
+                            .toList(),
                       );
                     }),
                   ],
@@ -623,6 +780,141 @@ class _ProfilePageState extends State<ProfilePage> {
             style: GoogleFonts.poppins(
                 color: textColor, fontSize: 15, fontWeight: FontWeight.w700)),
       );
+
+  Widget _pointsCard(int points, Color cardBg, Color textColor, Color accent) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            accent.withOpacity(0.05),
+            accent.withOpacity(0.15),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: accent.withOpacity(0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+              color: accent.withOpacity(0.1),
+              blurRadius: 16,
+              offset: const Offset(0, 8))
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+                color: accent.withOpacity(0.2), shape: BoxShape.circle),
+            child: const Icon(Icons.stars_rounded, color: Colors.amber, size: 36),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Total Earned Points',
+            style: GoogleFonts.poppins(
+                color: textColor.withOpacity(0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$points',
+            style: GoogleFonts.poppins(
+                color: textColor,
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _rewardCard(VolunteerRewardModel reward, Color cardBg, Color textColor,
+      Color subColor, Color accent) {
+    bool isYearly = reward.type == 'yearly';
+    Color iconColor = isYearly ? Colors.amber : const Color(0xFF00C896);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: iconColor.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4))
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+                isYearly ? Icons.emoji_events_rounded : Icons.military_tech_rounded,
+                color: iconColor,
+                size: 24),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isYearly ? 'Yearly Reward' : 'Monthly Reward',
+                  style: GoogleFonts.poppins(
+                      color: textColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  'Awarded: ${reward.date ?? ''}',
+                  style: GoogleFonts.poppins(
+                      color: subColor, fontSize: 11),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'Tk ${reward.amount?.toStringAsFixed(0)}',
+                style: GoogleFonts.poppins(
+                    color: iconColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
+              ),
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: (reward.status == 'paid' ? Colors.green : Colors.orange).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  (reward.status ?? '').toUpperCase(),
+                  style: GoogleFonts.poppins(
+                      color: reward.status == 'paid' ? Colors.green : Colors.orange,
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _infoCard(Color bg, List<Widget> children) => Container(
         decoration: BoxDecoration(
@@ -882,6 +1174,278 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontSize: 9,
                     fontWeight: FontWeight.w700)),
           ),
+        ],
+      ),
+    );
+  }
+  // ── Bank/MFS Card ────────────────────────────────────────────────────────
+  void _showDeleteConfirmation(BuildContext ctx, TransactionMethodModel m,
+      Color cardBg, Color textColor, Color subColor) {
+    final isDark = Theme.of(ctx).brightness == Brightness.dark;
+    final sheetBg = isDark ? const Color(0xFF1A1D27) : Colors.white;
+    showDialog(
+      context: ctx,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: sheetBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.delete_outline_rounded,
+                  color: Colors.red, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text('Delete Method',
+                style: GoogleFonts.poppins(
+                    color: textColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700)),
+          ],
+        ),
+        content: Text(
+            'This payment method will be permanently deleted. Are you sure?',
+            style: GoogleFonts.poppins(color: subColor, fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            child: Text('Cancel',
+                style: GoogleFonts.poppins(
+                    color: subColor, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+            ),
+            onPressed: () {
+              Navigator.pop(dialogCtx);
+              if (m.id != null) {
+                Get.find<VolunteerController>().deleteTransactionMethod(m.id!);
+              }
+            },
+            child: Text('Delete',
+                style: GoogleFonts.poppins(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _bankMfsCard(
+    TransactionMethodModel m,
+    Color cardBg,
+    Color textColor,
+    Color subColor,
+    Color fieldBg,
+    Color accent,
+  ) {
+    final isMfs = m.type == 'mfs';
+    final methodColor = isMfs ? const Color(0xFF7C4DFF) : MyColors.primary;
+
+    String providerLabel = '';
+    String providerNumber = '';
+    if (isMfs) {
+      if (m.bkash != null &&
+          m.bkash.toString() != 'null' &&
+          m.bkash!.isNotEmpty) {
+        providerLabel = 'bKash';
+        providerNumber = m.bkash!;
+      } else if (m.nagad != null &&
+          m.nagad.toString() != 'null' &&
+          m.nagad!.isNotEmpty) {
+        providerLabel = 'Nagad';
+        providerNumber = m.nagad!;
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3))
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Row(
+          children: [
+            // Left color accent bar
+            Container(
+              width: 5,
+              height: isMfs ? 86 : 164,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [methodColor, methodColor.withOpacity(0.4)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header row with icon, title, type badge, popup menu
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: methodColor.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                              isMfs
+                                  ? Icons.account_balance_wallet_rounded
+                                  : Icons.account_balance_rounded,
+                              color: methodColor,
+                              size: 16),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                              isMfs
+                                  ? 'Mobile Financial Service'
+                                  : 'Bank Account',
+                              style: GoogleFonts.poppins(
+                                  color: textColor,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                        // Type badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: methodColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(isMfs ? 'MFS' : 'BANK',
+                              style: GoogleFonts.poppins(
+                                  color: methodColor,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800)),
+                        ),
+                        // ⋮ Edit / Delete popup menu
+                        PopupMenuButton<String>(
+                          padding: EdgeInsets.zero,
+                          icon: Icon(Icons.more_vert_rounded,
+                              color: subColor, size: 20),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                          onSelected: (val) {
+                            if (val == 'edit') {
+                              Get.to(() => TransactionMethodList());
+                            } else if (val == 'delete') {
+                              _showDeleteConfirmation(
+                                  context, m, cardBg, textColor, subColor);
+                            }
+                          },
+                          itemBuilder: (ctx) => [
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Row(children: [
+                                Icon(Icons.edit_rounded,
+                                    size: 16, color: methodColor),
+                                const SizedBox(width: 10),
+                                Text('Edit',
+                                    style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13)),
+                              ]),
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(children: [
+                                const Icon(Icons.delete_outline_rounded,
+                                    size: 16, color: Colors.red),
+                                const SizedBox(width: 10),
+                                Text('Delete',
+                                    style: GoogleFonts.poppins(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13)),
+                              ]),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    // Details
+                    if (isMfs) ...[
+                      _bankDetailRow(
+                        providerLabel.isEmpty ? 'Provider' : providerLabel,
+                        providerNumber.isEmpty ? '—' : providerNumber,
+                        providerLabel == 'bKash'
+                            ? const Color(0xFFE2136E)
+                            : providerLabel == 'Nagad'
+                                ? const Color(0xFFFF6600)
+                                : methodColor,
+                        textColor,
+                        subColor,
+                        fieldBg,
+                      ),
+                    ] else ...[
+                      _bankDetailRow('Bank', m.bankName ?? '—', methodColor,
+                          textColor, subColor, fieldBg),
+                      const SizedBox(height: 4),
+                      _bankDetailRow('Branch', m.branchName ?? '—',
+                          methodColor, textColor, subColor, fieldBg),
+                      const SizedBox(height: 4),
+                      _bankDetailRow('Account', m.accountNumber ?? '—',
+                          methodColor, textColor, subColor, fieldBg),
+                      const SizedBox(height: 4),
+                      _bankDetailRow('Holder', m.holderName ?? '—',
+                          methodColor, textColor, subColor, fieldBg),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _bankDetailRow(String label, String value, Color accentColor,
+      Color textColor, Color subColor, Color fieldBg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: fieldBg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Text(label,
+              style: GoogleFonts.poppins(
+                  color: subColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500)),
+          const Spacer(),
+          Text(value,
+              style: GoogleFonts.poppins(
+                  color: textColor,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700)),
         ],
       ),
     );

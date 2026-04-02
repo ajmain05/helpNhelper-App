@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:helpnhelper/models/transaction.dart';
 import 'package:helpnhelper/models/transaction_method_model.dart';
 import 'package:helpnhelper/models/volunteer_historyModel.dart';
+import 'package:helpnhelper/models/volunteer_points_model.dart';
 import 'package:helpnhelper/service/volunteer_service.dart';
 
 class VolunteerController extends GetxController {
@@ -9,6 +10,7 @@ class VolunteerController extends GetxController {
   List<TransactionMethodModel> transactionMethodList =
       <TransactionMethodModel>[].obs;
   List<TransactionModel> transactionList = <TransactionModel>[].obs;
+  var myPointsData = VolunteerPointsModel().obs;
   var service = VolunteerService();
 
   Rx<VolunteerHistoryModel> applicationDetail = VolunteerHistoryModel().obs;
@@ -17,6 +19,7 @@ class VolunteerController extends GetxController {
   onInit() async {
     super.onInit();
     getBankList();
+    getMyPoints();
   }
 
   @override
@@ -39,8 +42,23 @@ class VolunteerController extends GetxController {
     return await service.getTransactions();
   }
 
+  Future<void> getMyPoints() async {
+    return await service.getMyPoints();
+  }
+
   addTransactionMethod(var data) {
+    isLoading.value = true;
     return service.addTransactionMethod(data);
+  }
+
+  updateTransactionMethod(var data, int id) {
+    isLoading.value = true;
+    return service.updateTransactionMethod(data, id);
+  }
+
+  deleteTransactionMethod(int id) {
+    isLoading.value = true;
+    return service.deleteTransactionMethod(id);
   }
 
   updateStatus(var data, String id) {

@@ -32,3 +32,5 @@ final updateProfileApi =
 final orgApplicationsApi = "${baseUrl}organization/applications"; // GET
 final orgSubmitApplicationApi = "${baseUrl}organization/application"; // POST
 final settingsApi = "${baseUrl}settings"; // GET
+final getVolunteerLeaderboardApi = "${baseUrl}volunteer/leaderboard"; // GET
+final getVolunteerMyPointsApi = "${baseUrl}volunteer/my-points"; // GET

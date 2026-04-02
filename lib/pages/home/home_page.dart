@@ -14,6 +14,7 @@ import 'package:helpnhelper/widgets/campaign_card.dart';
 import 'package:helpnhelper/widgets/custom_button.dart';
 import 'package:helpnhelper/widgets/section_header.dart';
 import 'package:helpnhelper/widgets/stats_card.dart';
+import 'package:helpnhelper/widgets/top_volunteers_slider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -269,7 +270,6 @@ class _HomePageState extends State<HomePage> {
                 );
               }),
 
-              const SizedBox(height: DesignSystem.spacingL),
 
               // ── Successful Campaigns ─────────────────────────────────────────
               // Shows campaigns that have reached 100% of their goal.
@@ -333,7 +333,7 @@ class _HomePageState extends State<HomePage> {
               // ── Our Work / Success Stories ────────────────────────────────────
               // Shows success stories from the admin panel (before/after photos).
               SectionHeader(
-                title: "Our Works",
+                title: "Successful Campaigns",
                 onSeeAllTap: () => Get.to(SuccessStories()),
               ),
 
@@ -380,7 +380,16 @@ class _HomePageState extends State<HomePage> {
                       );
               }),
 
-              const SizedBox(height: DesignSystem.spacingXL),
+              const SizedBox(height: DesignSystem.spacingL),
+
+              // ── Top Volunteers ────────────────────────────────────────────────
+              Obx(() => controller.volunteerLeaderboardList.isNotEmpty
+                  ? TopVolunteersSlider(volunteers: controller.volunteerLeaderboardList)
+                  : const SizedBox.shrink()),
+              
+              Obx(() => controller.volunteerLeaderboardList.isNotEmpty
+                  ? const SizedBox(height: DesignSystem.spacingXL)
+                  : const SizedBox(height: DesignSystem.spacingXL)),
             ],
           ),
         ),

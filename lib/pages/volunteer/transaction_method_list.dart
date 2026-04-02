@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:helpnhelper/models/transaction_method_model.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:helpnhelper/controllers/volunteer_controller.dart';
@@ -291,6 +292,348 @@ class _TransactionMethodListState extends State<TransactionMethodList> {
       );
     }
 
+    void _showMethodDialog(BuildContext context, {TransactionMethodModel? editItem}) {
+      if (editItem != null) {
+        if (editItem.type == 'mfs') {
+          methodTypeController.text = 'MFS';
+          if (editItem.bkash != null && editItem.bkash.toString() != 'null' && editItem.bkash.toString().isNotEmpty) {
+            mfsTypeController.text = 'Bkash';
+            phoneController.text = editItem.bkash.toString();
+          } else {
+            mfsTypeController.text = 'Nagad';
+            phoneController.text = editItem.nagad.toString();
+          }
+        } else {
+          methodTypeController.text = 'BANK';
+          bankNameController.text = editItem.bankName ?? '';
+          branchNameController.text = editItem.branchName ?? '';
+          routeController.text = editItem.routingNumber ?? '';
+          holderController.text = editItem.holderName ?? '';
+          accountNumberController.text = editItem.accountNumber ?? '';
+        }
+      } else {
+        methodTypeController.clear();
+        mfsTypeController.clear();
+        phoneController.clear();
+        bankNameController.clear();
+        branchNameController.clear();
+        routeController.clear();
+        holderController.clear();
+        accountNumberController.clear();
+      }
+
+      showDialog(
+
+            context: context,
+            builder: (ctx) {
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                insetPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                child: StatefulBuilder(
+                  builder: (ctx, setS) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: sheetBg,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Obx(
+                          () => Visibility(
+                            visible:
+                                !Get.find<VolunteerController>().isLoading.value,
+                            replacement: const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(40),
+                                child: CircularProgressIndicator(
+                                    color: MyColors.primary),
+                              ),
+                            ),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Dialog title
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              MyColors.primary.withOpacity(0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(
+                                            Icons.add_card_rounded,
+                                            color: MyColors.primary,
+                                            size: 20),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(editItem != null ? 'Edit Payment Method' : 'Add Payment Method',
+                                          style: GoogleFonts.poppins(
+                                              color: textColor,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700)),
+                                    ],
+                                  ),
+                                  Divider(height: 28, color: borderColor),
+
+                                  // Method type
+                                  _buildLabel('Payment Method', textColor),
+                                  _buildField(
+                                    ctrl: methodTypeController,
+                                    hint: 'Select method',
+                                    icon: Icons.payment_rounded,
+                                    readOnly: true,
+                                    textColor: textColor,
+                                    hintColor: hintColor,
+                                    borderColor: borderColor,
+                                    fieldBg: fieldBg,
+                                    validator: (v) => (v == null || v.isEmpty)
+                                        ? 'Please select a method'
+                                        : null,
+                                    onTap: () => _showMethodPicker(ctx, setS),
+                                  ),
+
+                                  // MFS fields
+                                  if (methodTypeController.text == 'MFS') ...[
+                                    _buildLabel('MFS Provider', textColor),
+                                    _buildField(
+                                      ctrl: mfsTypeController,
+                                      hint: 'Select MFS provider',
+                                      icon:
+                                          Icons.account_balance_wallet_rounded,
+                                      readOnly: true,
+                                      textColor: textColor,
+                                      hintColor: hintColor,
+                                      borderColor: borderColor,
+                                      fieldBg: fieldBg,
+                                      validator: (v) => (v == null || v.isEmpty)
+                                          ? 'Please select MFS'
+                                          : null,
+                                      onTap: () => _showMfsPicker(ctx, setS),
+                                    ),
+                                    _buildLabel('Account Number', textColor),
+                                    _buildField(
+                                      ctrl: phoneController,
+                                      hint: 'e.g. 01XXXXXXXXX',
+                                      icon: Icons.phone_android_rounded,
+                                      keyboardType: TextInputType.phone,
+                                      textColor: textColor,
+                                      hintColor: hintColor,
+                                      borderColor: borderColor,
+                                      fieldBg: fieldBg,
+                                      validator: (v) => (v == null || v.isEmpty)
+                                          ? 'Please enter number'
+                                          : null,
+                                    ),
+                                  ],
+
+                                  // BANK fields
+                                  if (methodTypeController.text == 'BANK') ...[
+                                    _buildLabel('Bank Name', textColor),
+                                    _buildField(
+                                      ctrl: bankNameController,
+                                      hint: 'e.g. Dutch-Bangla Bank',
+                                      icon: Icons.account_balance_rounded,
+                                      textColor: textColor,
+                                      hintColor: hintColor,
+                                      borderColor: borderColor,
+                                      fieldBg: fieldBg,
+                                      validator: (v) => (v == null || v.isEmpty)
+                                          ? 'Please enter bank name'
+                                          : null,
+                                    ),
+                                    _buildLabel('Branch Name', textColor),
+                                    _buildField(
+                                      ctrl: branchNameController,
+                                      hint: 'e.g. Gulshan Branch',
+                                      icon: Icons.business_rounded,
+                                      textColor: textColor,
+                                      hintColor: hintColor,
+                                      borderColor: borderColor,
+                                      fieldBg: fieldBg,
+                                      validator: (v) => (v == null || v.isEmpty)
+                                          ? 'Please enter branch name'
+                                          : null,
+                                    ),
+                                    _buildLabel('Routing Number', textColor),
+                                    _buildField(
+                                      ctrl: routeController,
+                                      hint: 'e.g. 090274234',
+                                      icon: Icons.confirmation_number_outlined,
+                                      keyboardType: TextInputType.number,
+                                      textColor: textColor,
+                                      hintColor: hintColor,
+                                      borderColor: borderColor,
+                                      fieldBg: fieldBg,
+                                      validator: (v) => (v == null || v.isEmpty)
+                                          ? 'Please enter routing number'
+                                          : null,
+                                    ),
+                                    _buildLabel('Account Holder', textColor),
+                                    _buildField(
+                                      ctrl: holderController,
+                                      hint: 'Full name',
+                                      icon: Icons.person_outline_rounded,
+                                      textColor: textColor,
+                                      hintColor: hintColor,
+                                      borderColor: borderColor,
+                                      fieldBg: fieldBg,
+                                      validator: (v) => (v == null || v.isEmpty)
+                                          ? 'Please enter holder name'
+                                          : null,
+                                    ),
+                                    _buildLabel('Account Number', textColor),
+                                    _buildField(
+                                      ctrl: accountNumberController,
+                                      hint: 'e.g. 123456789012',
+                                      icon: Icons.credit_card_rounded,
+                                      keyboardType: TextInputType.number,
+                                      textColor: textColor,
+                                      hintColor: hintColor,
+                                      borderColor: borderColor,
+                                      fieldBg: fieldBg,
+                                      validator: (v) => (v == null || v.isEmpty)
+                                          ? 'Please enter account number'
+                                          : null,
+                                    ),
+                                  ],
+
+                                  const SizedBox(height: 24),
+
+                                  // Submit & Cancel buttons
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          onPressed: () => Navigator.pop(ctx),
+                                          style: OutlinedButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 14),
+                                            side:
+                                                BorderSide(color: borderColor),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12)),
+                                          ),
+                                          child: Text('Cancel',
+                                              style: GoogleFonts.poppins(
+                                                  color: subColor,
+                                                  fontWeight: FontWeight.w600)),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: MyColors.primary,
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 14),
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12)),
+                                          ),
+                                          onPressed: () {
+                                            if (_formKey.currentState!
+                                                .validate()) {
+                                              var map = <String, dynamic>{};
+                                              if (methodTypeController.text ==
+                                                  'MFS') {
+                                                map['type'] = 'mfs';
+                                                var lowerMfsType = mfsTypeController.text.toLowerCase();
+                                                if (lowerMfsType == 'bkash') {
+                                                  map['bkash'] = phoneController.text;
+                                                } else {
+                                                  map['nagad'] = phoneController.text;
+                                                }
+                                              } else {
+                                                map['type'] = 'bank';
+                                                map['bank_name'] =
+                                                    bankNameController.text;
+                                                map['branch_name'] =
+                                                    branchNameController.text;
+                                                map['routing_number'] =
+                                                    routeController.text;
+                                                map['holder_name'] =
+                                                    holderController.text;
+                                                map['account_number'] =
+                                                    accountNumberController
+                                                        .text;
+                                              }
+                                              if (editItem != null && editItem.id != null) {
+                                                Get.find<VolunteerController>().updateTransactionMethod(map, editItem.id!).then((value) {
+                                                  if (value == true) {
+                                                    Navigator.pop(ctx);
+                                                    _createWallet(context);
+                                                  }
+                                                });
+                                              } else {
+                                                Get.find<VolunteerController>()
+                                                    .addTransactionMethod(map)
+                                                    .then((value) {
+                                                  if (value == true) {
+                                                    Navigator.pop(ctx);
+                                                    _createWallet(context);
+                                                  }
+                                                });
+                                              }
+                                            }
+                                          },
+                                          child: Text(editItem != null ? 'Update Method' : 'Add Method',
+                                              style: GoogleFonts.poppins(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+    }
+
+    void _deleteConfirm(BuildContext context, TransactionMethodModel item) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: sheetBg,
+          title: Text('Delete Method', style: GoogleFonts.poppins(color: textColor, fontWeight: FontWeight.w600)),
+          content: Text('Are you sure you want to delete this transaction method?', style: GoogleFonts.poppins(color: subColor)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: GoogleFonts.poppins(color: subColor)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (item.id != null) {
+                  Get.find<VolunteerController>().deleteTransactionMethod(item.id!);
+                }
+              },
+              child: Text('Delete', style: GoogleFonts.poppins(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: scaffoldBg,
       body: CustomScrollView(
@@ -487,20 +830,44 @@ class _TransactionMethodListState extends State<TransactionMethodList> {
                                   ],
                                 ),
                                 const Spacer(),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: MyColors.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(isMfs ? 'MFS' : 'BANK',
-                                      style: GoogleFonts.poppins(
-                                          color: isMfs
-                                              ? const Color(0xFF7C4DFF)
-                                              : MyColors.primary,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700)),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: MyColors.primary.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(isMfs ? 'MFS' : 'BANK',
+                                          style: GoogleFonts.poppins(
+                                              color: isMfs
+                                                  ? const Color(0xFF7C4DFF)
+                                                  : MyColors.primary,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700)),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    PopupMenuButton<String>(
+                                      padding: EdgeInsets.zero,
+                                      icon: Icon(Icons.more_vert, color: subColor, size: 20),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      onSelected: (val) {
+                                        if (val == 'edit') {
+                                           _showMethodDialog(context, editItem: item);
+                                        } else if (val == 'delete') {
+                                           _deleteConfirm(context, item);
+                                        }
+                                      },
+                                      itemBuilder: (ctx) => [
+                                        PopupMenuItem(value: 'edit', child: Row(children: [const Icon(Icons.edit, size: 18), const SizedBox(width: 8), const Text('Edit')])),
+                                        PopupMenuItem(value: 'delete', child: Row(children: [const Icon(Icons.delete, color: Colors.red, size: 18), const SizedBox(width: 8), const Text('Delete', style: TextStyle(color: Colors.red))])),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -512,23 +879,26 @@ class _TransactionMethodListState extends State<TransactionMethodList> {
                             child: Column(
                               children: isMfs
                                   ? [
-                                      _detailRow(
-                                          Icons.phone_android_rounded,
-                                          'Bkash',
-                                          item.bkash?.toString() != 'null'
-                                              ? item.bkash.toString()
-                                              : 'N/A',
-                                          textColor,
-                                          subColor,
-                                          fieldBg),
-                                      const SizedBox(height: 8),
-                                      _detailRow(
-                                          Icons.account_balance_wallet_outlined,
-                                          'Nagad',
-                                          item.nagad?.toString() ?? 'N/A',
-                                          textColor,
-                                          subColor,
-                                          fieldBg),
+                                      if (item.bkash != null && item.bkash.toString() != 'null' && item.bkash.toString().isNotEmpty) ...[
+                                        _detailRow(
+                                            Icons.phone_android_rounded,
+                                            'Bkash',
+                                            item.bkash.toString(),
+                                            textColor,
+                                            subColor,
+                                            fieldBg),
+                                      ],
+                                      if (item.bkash != null && item.nagad != null && item.bkash.toString() != 'null' && item.nagad.toString() != 'null' && item.bkash.toString().isNotEmpty && item.nagad.toString().isNotEmpty)
+                                        const SizedBox(height: 8),
+                                      if (item.nagad != null && item.nagad.toString() != 'null' && item.nagad.toString().isNotEmpty) ...[
+                                        _detailRow(
+                                            Icons.account_balance_wallet_outlined,
+                                            'Nagad',
+                                            item.nagad.toString(),
+                                            textColor,
+                                            subColor,
+                                            fieldBg),
+                                      ],
                                     ]
                                   : [
                                       _detailRow(
@@ -591,277 +961,7 @@ class _TransactionMethodListState extends State<TransactionMethodList> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: MyColors.primary,
         onPressed: () {
-          showDialog(
-            context: context,
-            builder: (ctx) {
-              return Dialog(
-                backgroundColor: Colors.transparent,
-                insetPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-                child: StatefulBuilder(
-                  builder: (ctx, setS) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: sheetBg,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
-                        child: Obx(
-                          () => Visibility(
-                            visible:
-                                Get.find<VolunteerController>().isLoading.value,
-                            replacement: const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(40),
-                                child: CircularProgressIndicator(
-                                    color: MyColors.primary),
-                              ),
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Dialog title
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              MyColors.primary.withOpacity(0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                        child: const Icon(
-                                            Icons.add_card_rounded,
-                                            color: MyColors.primary,
-                                            size: 20),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text('Add Payment Method',
-                                          style: GoogleFonts.poppins(
-                                              color: textColor,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700)),
-                                    ],
-                                  ),
-                                  Divider(height: 28, color: borderColor),
-
-                                  // Method type
-                                  _buildLabel('Payment Method', textColor),
-                                  _buildField(
-                                    ctrl: methodTypeController,
-                                    hint: 'Select method',
-                                    icon: Icons.payment_rounded,
-                                    readOnly: true,
-                                    textColor: textColor,
-                                    hintColor: hintColor,
-                                    borderColor: borderColor,
-                                    fieldBg: fieldBg,
-                                    validator: (v) => (v == null || v.isEmpty)
-                                        ? 'Please select a method'
-                                        : null,
-                                    onTap: () => _showMethodPicker(ctx, setS),
-                                  ),
-
-                                  // MFS fields
-                                  if (methodTypeController.text == 'MFS') ...[
-                                    _buildLabel('MFS Provider', textColor),
-                                    _buildField(
-                                      ctrl: mfsTypeController,
-                                      hint: 'Select MFS provider',
-                                      icon:
-                                          Icons.account_balance_wallet_rounded,
-                                      readOnly: true,
-                                      textColor: textColor,
-                                      hintColor: hintColor,
-                                      borderColor: borderColor,
-                                      fieldBg: fieldBg,
-                                      validator: (v) => (v == null || v.isEmpty)
-                                          ? 'Please select MFS'
-                                          : null,
-                                      onTap: () => _showMfsPicker(ctx, setS),
-                                    ),
-                                    _buildLabel('Account Number', textColor),
-                                    _buildField(
-                                      ctrl: phoneController,
-                                      hint: 'e.g. 01XXXXXXXXX',
-                                      icon: Icons.phone_android_rounded,
-                                      keyboardType: TextInputType.phone,
-                                      textColor: textColor,
-                                      hintColor: hintColor,
-                                      borderColor: borderColor,
-                                      fieldBg: fieldBg,
-                                      validator: (v) => (v == null || v.isEmpty)
-                                          ? 'Please enter number'
-                                          : null,
-                                    ),
-                                  ],
-
-                                  // BANK fields
-                                  if (methodTypeController.text == 'BANK') ...[
-                                    _buildLabel('Bank Name', textColor),
-                                    _buildField(
-                                      ctrl: bankNameController,
-                                      hint: 'e.g. Dutch-Bangla Bank',
-                                      icon: Icons.account_balance_rounded,
-                                      textColor: textColor,
-                                      hintColor: hintColor,
-                                      borderColor: borderColor,
-                                      fieldBg: fieldBg,
-                                      validator: (v) => (v == null || v.isEmpty)
-                                          ? 'Please enter bank name'
-                                          : null,
-                                    ),
-                                    _buildLabel('Branch Name', textColor),
-                                    _buildField(
-                                      ctrl: branchNameController,
-                                      hint: 'e.g. Gulshan Branch',
-                                      icon: Icons.business_rounded,
-                                      textColor: textColor,
-                                      hintColor: hintColor,
-                                      borderColor: borderColor,
-                                      fieldBg: fieldBg,
-                                      validator: (v) => (v == null || v.isEmpty)
-                                          ? 'Please enter branch name'
-                                          : null,
-                                    ),
-                                    _buildLabel('Routing Number', textColor),
-                                    _buildField(
-                                      ctrl: routeController,
-                                      hint: 'e.g. 090274234',
-                                      icon: Icons.confirmation_number_outlined,
-                                      keyboardType: TextInputType.number,
-                                      textColor: textColor,
-                                      hintColor: hintColor,
-                                      borderColor: borderColor,
-                                      fieldBg: fieldBg,
-                                      validator: (v) => (v == null || v.isEmpty)
-                                          ? 'Please enter routing number'
-                                          : null,
-                                    ),
-                                    _buildLabel('Account Holder', textColor),
-                                    _buildField(
-                                      ctrl: holderController,
-                                      hint: 'Full name',
-                                      icon: Icons.person_outline_rounded,
-                                      textColor: textColor,
-                                      hintColor: hintColor,
-                                      borderColor: borderColor,
-                                      fieldBg: fieldBg,
-                                      validator: (v) => (v == null || v.isEmpty)
-                                          ? 'Please enter holder name'
-                                          : null,
-                                    ),
-                                    _buildLabel('Account Number', textColor),
-                                    _buildField(
-                                      ctrl: accountNumberController,
-                                      hint: 'e.g. 123456789012',
-                                      icon: Icons.credit_card_rounded,
-                                      keyboardType: TextInputType.number,
-                                      textColor: textColor,
-                                      hintColor: hintColor,
-                                      borderColor: borderColor,
-                                      fieldBg: fieldBg,
-                                      validator: (v) => (v == null || v.isEmpty)
-                                          ? 'Please enter account number'
-                                          : null,
-                                    ),
-                                  ],
-
-                                  const SizedBox(height: 24),
-
-                                  // Submit & Cancel buttons
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: OutlinedButton(
-                                          onPressed: () => Navigator.pop(ctx),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 14),
-                                            side:
-                                                BorderSide(color: borderColor),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12)),
-                                          ),
-                                          child: Text('Cancel',
-                                              style: GoogleFonts.poppins(
-                                                  color: subColor,
-                                                  fontWeight: FontWeight.w600)),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: MyColors.primary,
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 14),
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(12)),
-                                          ),
-                                          onPressed: () {
-                                            if (_formKey.currentState!
-                                                .validate()) {
-                                              var map = <String, dynamic>{};
-                                              if (methodTypeController.text ==
-                                                  'MFS') {
-                                                map['type'] = 'mfs';
-                                                map['mfs_type'] =
-                                                    mfsTypeController.text;
-                                                map['phone'] =
-                                                    phoneController.text;
-                                              } else {
-                                                map['type'] = 'bank';
-                                                map['bank_name'] =
-                                                    bankNameController.text;
-                                                map['branch_name'] =
-                                                    branchNameController.text;
-                                                map['routing_number'] =
-                                                    routeController.text;
-                                                map['holder_name'] =
-                                                    holderController.text;
-                                                map['account_number'] =
-                                                    accountNumberController
-                                                        .text;
-                                              }
-                                              Get.find<VolunteerController>()
-                                                  .addTransactionMethod(map)
-                                                  .then((value) {
-                                                if (value == true) {
-                                                  Navigator.pop(ctx);
-                                                  _createWallet(context);
-                                                }
-                                              });
-                                            }
-                                          },
-                                          child: Text('Add Method',
-                                              style: GoogleFonts.poppins(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w600)),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          );
+          _showMethodDialog(context);
         },
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text('Add Method',
